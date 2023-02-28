@@ -1,9 +1,6 @@
 package me.jaketheduque.controllers;
 
-import me.jaketheduque.sql.BrandRepository;
-import me.jaketheduque.sql.ClothesRepository;
-import me.jaketheduque.sql.PatternRepository;
-import me.jaketheduque.sql.TypeRepository;
+import me.jaketheduque.sql.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +20,9 @@ public class WebController {
     @Autowired
     private PatternRepository patternRepository;
 
+    @Autowired
+    private OutfitTypeRepository outfitTypeRepository;
+
     @RequestMapping("/add")
     public String add(Model model) {
         model.addAttribute("brands", brandRepository.getAllBrands());
@@ -35,5 +35,11 @@ public class WebController {
     public String view(Model model) {
         model.addAttribute("clothes", clothesRepository.getAllClothes());
         return "view";
+    }
+
+    @RequestMapping("/outfit")
+    public String outfit(Model model) {
+        model.addAttribute("outfit_types", outfitTypeRepository.getAllOutfitTypes());
+        return "outfit";
     }
 }

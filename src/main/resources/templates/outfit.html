@@ -24,11 +24,11 @@
                                     <label for="given_color">
                                         <h4>Color:</h4>
                                     </label>
-                                    <input type="color" id="given_color" value="#0000000" ng-disabled="randomColor"
+                                    <input type="color" id="given_color" value="#000000" ng-disabled="randomColor"
                                         ng-model="color">
                                 </div>
                                 <div class="col">
-                                    <label class="form-check-label" th:for="|bottom${iter.index}|">Random Color?</label>
+                                    <label class="form-check-label">Random Color?</label>
                                     <input class="form-check-input m-1" type="checkbox" ng-model="randomColor">
                                 </div>
                             </div>
@@ -99,7 +99,7 @@
                                 <h4>Outfit Type:</h4>
                             </label>
                             <select name="outfit_type" id="outfit_type" ng-model="outfitTypeSelector">
-                                <option th:each="type : ${types}" th:text="${type.name}"></option>
+                                <option th:each="outfit_type : ${outfit_types}" th:text="${outfit_type.name}"></option>
                             </select>
                         </div>
 

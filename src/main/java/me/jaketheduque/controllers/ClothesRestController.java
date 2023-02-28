@@ -39,16 +39,16 @@ public class ClothesRestController {
     }
 
     @GetMapping("/api/getclothes")
-    public List<Clothes> getClothes(@RequestParam(value = "id", required = false) Long id) {
+    public List<Clothes> getClothes(@RequestParam(value = "uuid", required = false) String uuid) {
         // If no id is provided then return all clothes
-        if (id == null) {
+        if (uuid == null) {
             List<Clothes> clothes = clothesRepository.getAllClothes();
 
             log.info("All clothes requested");
 
             return clothes;
         } else {
-            Clothes item = clothesRepository.getClothesFromID(id);
+            Clothes item = clothesRepository.getClothesFromID(uuid);
 
             log.info("Clothing item requested: " + item);
 
