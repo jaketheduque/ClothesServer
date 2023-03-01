@@ -5,7 +5,6 @@ import me.jaketheduque.data.Color;
 import me.jaketheduque.data.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -117,28 +116,27 @@ public class ClothesRepository {
         return item;
     }
 
-    public List<Clothes> getClothesFromColorAndType(Color color, Type... types) {
+    public List<Clothes> getClothesFromColorAndType(java.awt.Color color, Type... types) {
         String typeQuery = "";
-        boolean first = false;
+        boolean first = true;
 
         // Adds OR clause for each type
         for (Type type : types) {
             if (first) {
-                typeQuery += String.format("type_uuid=UUID_TO_BIN(%s)", type.getUUID().toString());
+                typeQuery += String.format("type_uuid='%s'", type.getUUID().toString());
+                first = false;
             } else {
-                typeQuery += String.format("OR type_uuid=UUID_TO_BIN(%s)", type.getUUID().toString());
+                typeQuery += String.format("OR type_uuid='%s'", type.getUUID().toString());
             }
         }
 
-        String sql = "SELECT * FROM Main.v_clothes_full_rgb_replacement WHERE " + typeQuery + " ORDER BY CAST(RGB_DIFFERENCE(color_rgb, '?,?,?') AS FLOAT)";
+        String sql = "SELECT * FROM Main.v_clothes_full_replacement WHERE " + typeQuery + " ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
         List<Clothes> clothes = new ArrayList<>();
 
         // Set RGB values for query
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
         PreparedStatement stmt = conn.prepareCall(sql)) {
-            stmt.setInt(1, java.awt.Color.decode(color.getHex()).getRed());
-            stmt.setInt(2, java.awt.Color.decode(color.getHex()).getGreen());
-            stmt.setInt(3, java.awt.Color.decode(color.getHex()).getBlue());
+            stmt.setString(1, String.format("%d,%d,%d", color.getRed(), color.getGreen(), color.getBlue()));
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
 
