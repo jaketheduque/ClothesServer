@@ -9,6 +9,8 @@ import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
 import me.jaketheduque.sql.ClothesRepository;
 import me.jaketheduque.sql.OutfitTypeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,11 +20,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class OutfitRestController {
+    private static final Logger log = LoggerFactory.getLogger(OutfitRestController.class);
+
     @Autowired
     private OutfitTypeRepository outfitTypeRepository;
 
@@ -38,8 +43,7 @@ public class OutfitRestController {
     @PostMapping(path = "/api/getoutfit",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<Clothes, Integer>> add(@RequestBody String payload) {
-        Map<Clothes, Integer> clothesMap = new HashMap();
+    public ResponseEntity<String> add(@RequestBody String payload) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
@@ -57,18 +61,50 @@ public class OutfitRestController {
                 colors.add(new Color(r, g, b));
             }
 
-            // Goes through each clothes type and chooses a clothing item based on the color
-            for (Type type : outfitType.getTypeLayerMap().keySet()) {
-                // Chooses a random color from the scheme
-                Collections.shuffle(colors);
-                Color color = colors.get(0);
+            // Shuffles colors list
+            Collections.shuffle(colors);
 
-                clothesMap.put(clothesRepository.getClothesFromColorAndType(color, type).get(0), outfitType.getTypeLayerMap().get(type));
+            // Gets list of clothes type to filter down multiple top layers to one type per layer
+            List<Type> types = new ArrayList<>();
+            for (int layer = 0 ; layer < outfitType.getLayers() ; layer++) {
+                for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
+                    // Looks for a type with a layer which matches the current layer being searched for
+                    if (((Integer) entry.getValue()) == (layer + 1)) {
+                        Type t = (Type) entry.getKey();
+                        types.add(t);
+                    }
+                }
             }
+
+            // Selects a random bottom type
+            List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
+            Collections.shuffle(bottoms);
+            types.add(bottoms.get(0));
+
+            // Gets clothes list from list of types and list of colors
+            List<Clothes> clothes = new ArrayList<>();
+            for (int i = 0 ; i < types.size() ; i++) {
+                Clothes item = clothesRepository.getClothesFromColorAndType(colors.get(i), types.get(i)).get(0);
+                clothes.add(item);
+            }
+
+            // Goes through each clothes type and chooses a clothing item based on the color
+            // Also adds the JSON node to array node
+            ArrayNode array = objectMapper.createArrayNode();
+
+            // Adds each type in the final types list to the array node to be sent as response
+            for (Clothes c : clothes) {
+                JsonNode itemNode = objectMapper.valueToTree(c);
+                array.add(itemNode);
+            }
+
+            log.info("Generated outfit of type '{}' with {} items", outfitType.getName(), outfitType.getLayers());
+
+            return new ResponseEntity<> (array.toString(), HttpStatus.OK);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
 
-        return new ResponseEntity<> (clothesMap, HttpStatus.OK);
+        return null;
     }
 }

@@ -6,6 +6,19 @@
 
 <head>
     <title>Outfit Selection Page</title>
+    <style>
+        .color_box {
+            height: 30px;
+            width: 30px;
+            border-style: solid;
+            border-color: black;
+        }
+
+        .type_icon {
+            height: 40px;
+            width: 40px;
+        }
+    </style>
 </head>
 
 <body ng-app="outfitPage">
@@ -14,8 +27,8 @@
             <h1 class="text-center">Outfit Selector</h1>
         </div>
 
-        <div class="container">
-            <div class="row">
+        <div class="d-flex m-0">
+            <div class="row w-100">
                 <div class="d-flex m-2 col border" id="outfit_form">
                     <div class="justify-content-center col">
                         <div class="row container w-50 mx-auto mb-3 form-check form-switch">
@@ -98,8 +111,10 @@
                             <label for="outfit_type">
                                 <h4>Outfit Type:</h4>
                             </label>
-                            <select name="outfit_type" id="outfit_type" ng-model="outfitTypeSelector">
-                                <option th:each="outfit_type : ${outfit_types}" th:text="${outfit_type.name}"></option>
+                            <select name="outfit_type" id="outfit_type_selector">
+                                <option th:each="outfit_type : ${outfit_types}" th:text="${outfit_type.name}"
+                                    th:value="${outfit_type.getUUID()}" th:attr="layers=|${outfit_type.layers}|">
+                                </option>
                             </select>
                         </div>
 
@@ -112,7 +127,90 @@
 
 
                 </div>
-                <div class="col" ng-bind-html="outfit_result">
+                <div class="col">
+                    <p ng-bind="outfit_result"></p>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Primary Color</th>
+                                <th scope="col">Secondary Colors</th>
+                                <th scope="col">Pattern</th>
+                                <th scope="col">Brand</th>
+                            </tr>
+                        </thead>
+                        <tbody ng-repeat="item in clothes">
+                            <tr>
+                                <th>{{item.name}}</th>
+                                <td>
+                                    <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false"
+                                        src="/icons/{{item.type.name | lowercase}}.svg"
+                                        data-bs-target="#type_collapsible{{$index}}" ,
+                                        aria-controls="type_collapsible{{$index}}">
+                                    <div class="collapse w-75 m-2" id="type_collapsible{{$index}}">
+                                        <div class="card card-body form-check form-switch">
+                                            <h6>{{item.type.name}}</h6>
+                                            <div>
+                                                <label class="form-check-label" for="bottom{{$index}}">Bottom?</label>
+                                                <input class="form-check-input m-1" id="bottom{{$index}}"
+                                                    type="checkbox" disabled="disabled" ng-checked="item.type.bottom">
+                                            </div>
+                                            <div>
+                                                <label class="form-check-label" for="hooded{{$index}}">Hooded?</label>
+                                                <input class="form-check-input m-1" id="hooded{{$index}}"
+                                                    type="checkbox" disabled="disabled" ng-checked="item.type.hooded">
+                                            </div>
+                                            <div>
+                                                <label class="form-check-label" for="long_sleeve{{$index}}">Long
+                                                    Sleeve?</label>
+                                                <input class="form-check-input m-1" id="long_sleeve{{$index}}"
+                                                    type="checkbox" disabled="disabled"
+                                                    ng-checked="item.type.longSleeve">
+                                            </div>
+                                            <div>
+                                                <label class="form-check-label"
+                                                    for="buttoned{{$index}}">Buttoned?</label>
+                                                <input class="form-check-input m-1" id="buttoned{{$index}}"
+                                                    type="checkbox" disabled="disabled" ng-checked="item.type.buttoned">
+                                            </div>
+                                            <div>
+                                                <label class="form-check-label"
+                                                    for="zippered{{$index}}">Zippered?</label>
+                                                <input class="form-check-input m-1" id="zippered{{$index}}"
+                                                    type="checkbox" disabled="disabled" ng-checked="item.type.zippered">
+                                            </div>
+                                            <div>
+                                                <label class="form-check-label"
+                                                    for="collared{{$index}}">Collared?</label>
+                                                <input class="form-check-input m-1" id="collared{{$index}}"
+                                                    type="checkbox" disabled="disabled" ng-checked="item.type.collared">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="color_box m-1" ng-style="{'background-color': '{{item.color.hex}}'}"
+                                        title="{{item.color.name}}" ng-click="copyToClipboard(item.color.hex)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div ng-repeat="secondary_color in item.secondaryColors">
+                                        <div class="color_box m-1"
+                                            ng-style="{'background-color': '{{secondary_color.hex}}'}"
+                                            title="{{secondary_color.name}}"
+                                            ng-click="copyToClipboard(secondary_color.hex)">
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{item.pattern.name}}</td>
+                                <td>{{item.brand.name}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex" ng-bind-html="color_scheme_result">
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,9 +220,10 @@
 <script>
     var app = angular.module("outfitPage", []);
 
-    app.controller("outfitGenerator", function ($scope, $http, $window, $sce) {
+    app.controller("outfitGenerator", function ($scope, $http, $window, $compile, $sce) {
         $scope.onSubmitClick = function () {
             var color;
+            var colorScheme;
 
             if ($scope.randomColor) {
                 color = Math.floor(Math.random() * 16777215).toString(16);
@@ -132,12 +231,36 @@
                 color = $scope.color.substring(1);
             }
 
-            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode).then(function (result) {
-                $scope.outfit_result = $sce.trustAsHtml('<image src=\"' + result.data.image.bare + '\"">');
-            },
-                function () {
-                    $window.alert("Error happened when adding clothing item!")
-                });
+            const div = document.getElementById("outfit_type_selector");
+            const uuid = div.options[div.selectedIndex].value;
+            const layers = div.options[div.selectedIndex].getAttribute("layers");
+
+            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode + '&count=' + layers).then(function (result) {
+                $scope.color_scheme_result = $sce.trustAsHtml('<image src=\"' + result.data.image.bare + '\">');
+
+                //Create request body
+                const body = {
+                    outfit_type_uuid: uuid,
+                    colors: result.data.colors
+                }
+                const json = JSON.stringify(body);
+
+                $http.post('http://localhost:1114/api/getoutfit', json).then(function (result) {
+                    $scope.clothes = result.data;
+                }, function () {
+                    $window.alert("Error happened when getting outfit!")
+                })
+            }, function () {
+                $window.alert("Error happened when getting color scheme!")
+            });
+        }
+
+        $scope.copyToClipboard = function (copyText) {
+            // Copy the text inside the text field 
+            navigator.clipboard.writeText(copyText);
+
+            // Alert the copied text 
+            alert(" Copied: " + copyText);
         }
     });
 </script>

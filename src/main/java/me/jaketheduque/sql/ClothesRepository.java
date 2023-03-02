@@ -3,6 +3,8 @@ package me.jaketheduque.sql;
 import me.jaketheduque.data.Clothes;
 import me.jaketheduque.data.Color;
 import me.jaketheduque.data.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
 
 @Repository
 public class ClothesRepository {
+    private final static Logger log = LoggerFactory.getLogger(ClothesRepository.class);
+
     @Autowired
     private ColorsRepository colorsRepository;
 
@@ -156,13 +160,14 @@ public class ClothesRepository {
                         }
                     }
 
-                    clothes.add(new Clothes(UUID.fromString(result.getString("clothes_uuid")),
+                    Clothes item = new Clothes(UUID.fromString(result.getString("clothes_uuid")),
                             result.getString("name"),
                             primaryColor,
                             secondaryColors,
                             typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
                             patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
-                            result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid")))));
+                            result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))));
+                    clothes.add(item);
                 }
             }
         } catch (SQLException e) {

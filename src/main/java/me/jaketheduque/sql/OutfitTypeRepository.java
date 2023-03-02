@@ -1,7 +1,10 @@
 package me.jaketheduque.sql;
 
+import me.jaketheduque.controllers.ClothesRestController;
 import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -11,6 +14,8 @@ import java.util.*;
 
 @Repository
 public class OutfitTypeRepository {
+    private static final Logger log = LoggerFactory.getLogger(OutfitTypeRepository.class);
+
     @Autowired
     private TypeRepository typeRepository;
 
@@ -47,25 +52,31 @@ public class OutfitTypeRepository {
         // Open a connection
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            // Sets clothes_id before executing query
+            // Sets outfit_type_uuid before executing query
             stmt.setString(1, uuid);
+
+            // Get all types
             try (ResultSet result = stmt.executeQuery()) {
                 HashMap<Type, Integer> typeLayerMap = new HashMap<>();
+                List<Type> bottoms = new ArrayList<>();
 
-                // Manually handle first row to get outfit UUID and name plus first layer
-                result.next();
-                UUID outfitTypeUUID = UUID.fromString(result.getString("outfit_type_uuid"));
-                String name = result.getString("outfit_name");
-                UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
-                typeLayerMap.put(typeRepository.getTypeByUUID(typeUUID), result.getInt("layer"));
-
-                // Handle remaining rows
+                // "Static" variables which do not change from row to row
+                UUID outfitTypeUUID = UUID.fromString(uuid);
+                String outfitTypeName = null;
                 while (result.next()) {
-                    typeLayerMap.put(typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))), result.getInt("layer"));
+                    outfitTypeName = result.getString("outfit_name");
+
+                    UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
+                    Type type = typeRepository.getTypeByUUID(typeUUID);
+
+                    if (result.getBoolean("bottom")) { // If bottom add to list
+                        bottoms.add(type);
+                    } else {
+                        typeLayerMap.put(type, result.getInt("layer"));
+                    }
                 }
 
-                outfitType = new OutfitType(outfitTypeUUID, name, typeLayerMap);
-
+                outfitType = new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
             }
         } catch (SQLException e) {
             e.printStackTrace();
