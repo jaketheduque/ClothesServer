@@ -242,9 +242,15 @@
     var app = angular.module("outfitPage", []);
 
     app.controller("outfitGenerator", function ($scope, $http, $window, $compile, $sce) {
+        $scope.randomColor = true;
         $scope.showLoading = false;
 
         $scope.onSubmitClick = function () {
+            if ($scope.color == null) {
+                $window.alert("Please choose a color or select random generation!")
+                return;
+            }
+
             var color;
             var colorScheme;
 
