@@ -18,13 +18,28 @@
             height: 40px;
             width: 40px;
         }
+
+        #loading_overlay {
+            /* Sit on top of the page content */
+            position: fixed;
+            /* Hidden by default */
+            display: show;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Black background with opacity */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Specify a stack order in case you're using a different order for other elements */
+            z-index: 2;
+        }
     </style>
 </head>
 
 <body ng-app="outfitPage">
     <div ng-controller="outfitGenerator">
-        <div class="row bg-dark text-white pt-3 pb-3 ps-5">
-            <h1 class="text-center">Outfit Selector</h1>
+        <div class="d-flex justify-content-center bg-dark text-white pt-3 pb-3 ps-5">
+            <h1>Outfit Selector</h1>
         </div>
 
         <div class="d-flex m-0">
@@ -214,6 +229,12 @@
                 </div>
             </div>
         </div>
+
+        <div class="d-flex align-items-center justify-content-center w-100 h-100" id="loading_overlay"
+            ng-show="showLoading">
+            <div class="d-flex spinner-border text-light" style="width: 5rem; height: 5rem;" role="status">
+            </div>
+        </div>
     </div>
 </body>
 
@@ -221,6 +242,8 @@
     var app = angular.module("outfitPage", []);
 
     app.controller("outfitGenerator", function ($scope, $http, $window, $compile, $sce) {
+        $scope.showLoading = false;
+
         $scope.onSubmitClick = function () {
             var color;
             var colorScheme;
@@ -235,18 +258,21 @@
             const uuid = div.options[div.selectedIndex].value;
             const layers = div.options[div.selectedIndex].getAttribute("layers");
 
-            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode + '&count=' + layers).then(function (result) {
-                $scope.color_scheme_result = $sce.trustAsHtml('<image src=\"' + result.data.image.bare + '\">');
-
-                //Create request body
+            // Show loading overlay
+            $scope.showLoading = true;
+            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode + '&count=' + layers).then(function (schemeResult) {
+                // Create request body
                 const body = {
                     outfit_type_uuid: uuid,
-                    colors: result.data.colors
+                    colors: schemeResult.data.colors
                 }
                 const json = JSON.stringify(body);
 
-                $http.post('http://localhost:1114/api/getoutfit', json).then(function (result) {
-                    $scope.clothes = result.data;
+                $http.post('http://localhost:1114/api/getoutfit', json).then(function (clothesResult) {
+                    $scope.color_scheme_result = $sce.trustAsHtml('<image src=\"' + schemeResult.data.image.bare + '\">');
+                    $scope.clothes = clothesResult.data;
+
+                    $scope.showLoading = false;
                 }, function () {
                     $window.alert("Error happened when getting outfit!")
                 })

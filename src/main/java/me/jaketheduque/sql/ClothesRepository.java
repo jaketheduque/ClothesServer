@@ -70,7 +70,7 @@ public class ClothesRepository {
                         patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
                         result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid")))));
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -120,29 +120,21 @@ public class ClothesRepository {
         return item;
     }
 
-    public List<Clothes> getClothesFromColorAndType(java.awt.Color color, Type... types) {
-        String typeQuery = "";
-        boolean first = true;
-
-        // Adds OR clause for each type
-        for (Type type : types) {
-            if (first) {
-                typeQuery += String.format("type_uuid='%s'", type.getUUID().toString());
-                first = false;
-            } else {
-                typeQuery += String.format("OR type_uuid='%s'", type.getUUID().toString());
-            }
-        }
-
-        String sql = "SELECT * FROM Main.v_clothes_full_replacement WHERE " + typeQuery + " ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
+    public List<Clothes> getClothesFromColorAndType(Type type, java.awt.Color... colors) {
+        String sql = "SELECT *, CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT) AS color_difference FROM Main.v_clothes_full_replacement WHERE type_uuid = ? ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
         List<Clothes> clothes = new ArrayList<>();
 
-        // Set RGB values for query
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
-        PreparedStatement stmt = conn.prepareCall(sql)) {
-            stmt.setString(1, String.format("%d,%d,%d", color.getRed(), color.getGreen(), color.getBlue()));
-            try (ResultSet result = stmt.executeQuery()) {
-                while (result.next()) {
+        // Go through each color in provided colors list and add them to map
+        Map<Float, Clothes> colorDifferenceMap = new HashMap<>();
+        for (java.awt.Color color : colors) {
+            // Set values for query
+            try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
+                 PreparedStatement stmt = conn.prepareCall(sql)) {
+                stmt.setString(1, String.format("%d,%d,%d", color.getRed(), color.getGreen(), color.getBlue()));
+                stmt.setString(2, type.getUUID().toString());
+                stmt.setString(3, String.format("%d,%d,%d", color.getRed(), color.getGreen(), color.getBlue()));
+                try (ResultSet result = stmt.executeQuery()) {
+                    result.next();
 
                     // Retrieve row and create clothes object
                     Color primaryColor = new Color(UUID.fromString(result.getString("color_uuid")), result.getString("color_name"), result.getString("color_hex"));
@@ -167,11 +159,22 @@ public class ClothesRepository {
                             typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
                             patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
                             result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))));
-                    clothes.add(item);
+
+                    colorDifferenceMap.put(result.getFloat("color_difference"), item);
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        }
+
+        // Gets iterator of the clothes sorted by color difference
+        Iterator<Float> clothesByDifference = colorDifferenceMap.keySet().stream().sorted().iterator();
+
+        // Get 5 items with closest colors to one of the provided colors
+        while (clothesByDifference.hasNext()) {
+            float difference = clothesByDifference.next();
+
+            clothes.add(colorDifferenceMap.get(difference));
         }
 
         return clothes;

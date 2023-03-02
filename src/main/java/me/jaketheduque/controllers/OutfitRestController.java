@@ -84,7 +84,7 @@ public class OutfitRestController {
             // Gets clothes list from list of types and list of colors
             List<Clothes> clothes = new ArrayList<>();
             for (int i = 0 ; i < types.size() ; i++) {
-                Clothes item = clothesRepository.getClothesFromColorAndType(colors.get(i), types.get(i)).get(0);
+                Clothes item = clothesRepository.getClothesFromColorAndType(types.get(i), colors.toArray(new Color[0])).get(0);
                 clothes.add(item);
             }
 
@@ -99,6 +99,7 @@ public class OutfitRestController {
             }
 
             log.info("Generated outfit of type '{}' with {} items", outfitType.getName(), outfitType.getLayers());
+            log.info("Item names: {}", clothes.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
 
             return new ResponseEntity<> (array.toString(), HttpStatus.OK);
         } catch (JsonProcessingException e) {
