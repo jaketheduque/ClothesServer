@@ -246,7 +246,7 @@
         $scope.showLoading = false;
 
         $scope.onSubmitClick = function () {
-            if ($scope.color == null) {
+            if ($scope.color == null && !$scope.randomColor) {
                 $window.alert("Please choose a color or select random generation!")
                 return;
             }
@@ -274,7 +274,7 @@
                 }
                 const json = JSON.stringify(body);
 
-                $http.post('http://localhost:1114/api/getoutfit', json).then(function (clothesResult) {
+                $http.post('http://192.168.86.2:1114/api/getoutfit', json).then(function (clothesResult) {
                     $scope.color_scheme_result = $sce.trustAsHtml('<image src=\"' + schemeResult.data.image.bare + '\">');
                     $scope.clothes = clothesResult.data;
 
