@@ -136,43 +136,44 @@ public class ClothesRepository {
                 stmt.setString(2, type.getUUID().toString());
                 stmt.setString(3, String.format("%d,%d,%d", color.getRed(), color.getGreen(), color.getBlue()));
                 try (ResultSet result = stmt.executeQuery()) {
-                    result.next();
+                    // Go through each row of query
+                    while (result.next()) {
 
-                    // Retrieve row and create clothes object
-                    Color primaryColor = new Color(UUID.fromString(result.getString("color_uuid")), result.getString("color_name"), result.getString("color_hex"));
+                        // Retrieve row and create clothes object
+                        Color primaryColor = new Color(UUID.fromString(result.getString("color_uuid")), result.getString("color_name"), result.getString("color_hex"));
 
-                    // Get lists for secondary color ids, names, and hexes
-                    Set<Color> secondaryColors = new HashSet<>();
-                    if (result.getString("secondary_color_uuids") != null) {
-                        List<String> secondaryColorIDs = Arrays.stream(result.getString("secondary_color_uuids").split(",")).collect(Collectors.toList());
-                        List<String> secondaryColorNames = Arrays.stream(result.getString("secondary_color_names").split(",")).collect(Collectors.toList());
-                        List<String> secondaryColorHexes = Arrays.stream(result.getString("secondary_color_hexes").split(",")).collect(Collectors.toList());
+                        // Get lists for secondary color ids, names, and hexes
+                        Set<Color> secondaryColors = new HashSet<>();
+                        if (result.getString("secondary_color_uuids") != null) {
+                            List<String> secondaryColorIDs = Arrays.stream(result.getString("secondary_color_uuids").split(",")).collect(Collectors.toList());
+                            List<String> secondaryColorNames = Arrays.stream(result.getString("secondary_color_names").split(",")).collect(Collectors.toList());
+                            List<String> secondaryColorHexes = Arrays.stream(result.getString("secondary_color_hexes").split(",")).collect(Collectors.toList());
 
-                        // Add each color to secondary colors set
-                        for (int n = 0; n < secondaryColorIDs.size(); n++) {
-                            secondaryColors.add(new Color(UUID.fromString(secondaryColorIDs.get(n)), secondaryColorNames.get(n), secondaryColorHexes.get(n)));
+                            // Add each color to secondary colors set
+                            for (int n = 0; n < secondaryColorIDs.size(); n++) {
+                                secondaryColors.add(new Color(UUID.fromString(secondaryColorIDs.get(n)), secondaryColorNames.get(n), secondaryColorHexes.get(n)));
+                            }
                         }
+
+                        Clothes item = new Clothes(UUID.fromString(result.getString("clothes_uuid")),
+                                result.getString("name"),
+                                primaryColor,
+                                secondaryColors,
+                                typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
+                                patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
+                                result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))));
+
+                        colorDifferenceMap.put(result.getFloat("color_difference"), item);
                     }
-
-                    Clothes item = new Clothes(UUID.fromString(result.getString("clothes_uuid")),
-                            result.getString("name"),
-                            primaryColor,
-                            secondaryColors,
-                            typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
-                            patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
-                            result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))));
-
-                    colorDifferenceMap.put(result.getFloat("color_difference"), item);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
 
-        // Gets iterator of the clothes sorted by color difference
+        // Gets iterator of the clothes sorted by color difference and goes through them
         Iterator<Float> clothesByDifference = colorDifferenceMap.keySet().stream().sorted().iterator();
 
-        // Get 5 items with closest colors to one of the provided colors
         while (clothesByDifference.hasNext()) {
             float difference = clothesByDifference.next();
 
