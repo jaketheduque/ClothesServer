@@ -1,5 +1,7 @@
 package me.jaketheduque.sql;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import me.jaketheduque.data.Clothes;
 import me.jaketheduque.data.Color;
 import me.jaketheduque.data.Type;
@@ -120,12 +122,12 @@ public class ClothesRepository {
         return item;
     }
 
-    public List<Clothes> getClothesFromColorAndType(Type type, java.awt.Color... colors) {
+    public List<Clothes> getClothesFromTypeAndColors(Type type, java.awt.Color... colors) {
         String sql = "SELECT *, CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT) AS color_difference FROM Main.v_clothes_full_replacement WHERE type_uuid = ? ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
         List<Clothes> clothes = new ArrayList<>();
 
         // Go through each color in provided colors list and add them to map
-        Map<Float, Clothes> colorDifferenceMap = new HashMap<>();
+        ArrayListMultimap<Float, Clothes> colorDifferenceMap = ArrayListMultimap.create();
         for (java.awt.Color color : colors) {
             // Set values for query
             try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
@@ -174,7 +176,14 @@ public class ClothesRepository {
         while (clothesByDifference.hasNext()) {
             float difference = clothesByDifference.next();
 
-            clothes.add(colorDifferenceMap.get(difference));
+            // Gets the list of clothes for each RGB float difference and shuffles them to all for same color items to be randomly picked
+            List<Clothes> differenceItems = colorDifferenceMap.get(difference);
+            Collections.shuffle(differenceItems);
+
+            // Adds each item in the multimap to the final list
+            for (Clothes item : differenceItems) {
+                clothes.add(item);
+            }
         }
 
         return clothes;

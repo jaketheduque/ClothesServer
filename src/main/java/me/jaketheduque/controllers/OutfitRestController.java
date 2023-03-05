@@ -84,7 +84,7 @@ public class OutfitRestController {
             // Gets clothes list from list of types and list of colors
             List<Clothes> clothes = new ArrayList<>();
             for (int i = 0 ; i < types.size() ; i++) {
-                Clothes item = clothesRepository.getClothesFromColorAndType(types.get(i), colors.toArray(new Color[0])).get(0);
+                Clothes item = clothesRepository.getClothesFromTypeAndColors(types.get(i), colors.toArray(new Color[0])).get(0);
                 clothes.add(item);
             }
 
