@@ -1,5 +1,6 @@
 package me.jaketheduque.controllers;
 
+import me.jaketheduque.data.Type;
 import me.jaketheduque.sql.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,5 +42,12 @@ public class WebController {
     public String outfit(Model model) {
         model.addAttribute("outfit_types", outfitTypeRepository.getAllOutfitTypes());
         return "outfit";
+    }
+
+    @RequestMapping("/addtype")
+    public String addType(Model model) {
+        model.addAttribute("bottoms", typeRepository.getAllTypes().stream().filter(Type::isBottom).toArray());
+        model.addAttribute("tops", typeRepository.getAllTypes().stream().filter(t -> t.isBottom() == false).toArray());
+        return "outfittypecreator";
     }
 }
