@@ -68,6 +68,8 @@ public class OutfitRestController {
             // Create outfit type and add to database
             OutfitType outfitType = new OutfitType(UUID.randomUUID(), name, topLayers, bottoms);
             outfitTypeRepository.addOutfitType(outfitType);
+
+            log.info("Added new outfit type with {} layers!", outfitType.getLayers());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
