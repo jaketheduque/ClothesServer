@@ -1,6 +1,5 @@
 package me.jaketheduque.sql;
 
-import me.jaketheduque.controllers.ClothesRestController;
 import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
 import org.slf4j.Logger;
@@ -83,5 +82,55 @@ public class OutfitTypeRepository {
         }
 
         return outfitType;
+    }
+
+    public boolean addOutfitType(OutfitType outfitType) {
+        UUID outfitTypeUUID = UUID.randomUUID();
+        String sql = "INSERT INTO outfit_types VALUES (UUID_TO_BIN(?), ?)"; // Parameters: Outfit type UUID, Outfit type name
+
+        // Open a connection
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD)) {
+            // Create outfit type
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, outfitTypeUUID.toString());
+                stmt.setString(2, outfitType.getName());
+                stmt.executeUpdate();
+            }
+
+            // Updates query to layers query
+            sql = "INSERT INTO outfit_type_layers VALUES (UUID_TO_BIN(UUID()), UUID_TO_BIN(?), UUID_TO_BIN(?), ?, ?)"; // Parameters: Outfit type UUID, Type UUID, layer, bottom
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                // Add bottom options
+                for (Type bottom : outfitType.getBottoms()) {
+                    stmt.setString(1, outfitTypeUUID.toString());
+                    stmt.setString(2, bottom.getUUID().toString());
+                    stmt.setInt(3, 1);
+                    stmt.setBoolean(4, true);
+                    stmt.addBatch();
+                }
+
+                // Add top layers
+                for (Map.Entry<Type, Integer> entry : outfitType.getTypeLayerMap().entrySet()) {
+                    Type top = entry.getKey();
+                    int layer = entry.getValue();
+
+                    stmt.setString(1, outfitTypeUUID.toString());
+                    stmt.setString(2, top.getUUID().toString());
+                    stmt.setInt(3, layer);
+                    stmt.setBoolean(4, false);
+                    stmt.addBatch();
+                }
+
+                // Execute update
+                stmt.executeBatch();
+
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

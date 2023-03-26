@@ -1,5 +1,7 @@
 package me.jaketheduque.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -119,6 +121,9 @@ public class Type {
     }
 
     @Override
+    /**
+     * Returns the Type in JSON format
+     */
     public String toString() {
         return "Type{" +
                 "type_uuid=" + type_uuid +

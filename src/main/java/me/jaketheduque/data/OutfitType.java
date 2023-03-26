@@ -3,10 +3,7 @@ package me.jaketheduque.data;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Immutable;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Immutable
@@ -19,15 +16,16 @@ public class OutfitType {
     private String name;
 
     @ManyToOne(targetEntity = Type.class)
-    private HashMap<Type, Integer> typeLayerMap;
+    private Map<Type, Integer> typeLayerMap;
 
     @ManyToOne
     private Type[] bottoms;
 
+    // Layers count includes the bottom
     @Column(name="layers")
     private int layers;
 
-    public OutfitType(UUID outfit_type_uuid, String name, HashMap<Type, Integer> typeLayerMap, Type[] bottoms) {
+    public OutfitType(UUID outfit_type_uuid, String name, Map<Type, Integer> typeLayerMap, Type[] bottoms) {
         this.outfit_type_uuid = outfit_type_uuid;
         this.name = name;
         this.typeLayerMap = typeLayerMap;
@@ -57,7 +55,7 @@ public class OutfitType {
         this.name = name;
     }
 
-    public HashMap<Type, Integer> getTypeLayerMap() {
+    public Map<Type, Integer> getTypeLayerMap() {
         return typeLayerMap;
     }
 

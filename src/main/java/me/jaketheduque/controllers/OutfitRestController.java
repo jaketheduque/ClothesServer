@@ -9,15 +9,14 @@ import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
 import me.jaketheduque.sql.ClothesRepository;
 import me.jaketheduque.sql.OutfitTypeRepository;
+import me.jaketheduque.sql.TypeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
 import java.util.List;
@@ -34,6 +33,69 @@ public class OutfitRestController {
     @Autowired
     private ClothesRepository clothesRepository;
 
+    @Autowired
+    private TypeRepository typeRepository;
+
+    @PostMapping(path = "/api/addoutfittype",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addOutfitType(@RequestBody String payload) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            JsonNode node = mapper.readTree(payload);
+
+            String name = node.get("name").asText();
+
+            // Create bottom types array
+            ArrayNode bottomOptionsNode = (ArrayNode) node.get("bottom_options");
+            Type[] bottoms = new Type[bottomOptionsNode.size()];
+            for (int i = 0 ; i < bottomOptionsNode.size() ; i++) {
+                bottoms[i] = typeRepository.getTypeByUUID(UUID.fromString(bottomOptionsNode.get(i).asText()));
+            }
+
+            // Create top layers type map
+            Map<Type, Integer> topLayers = new HashMap<>();
+            JsonNode topLayersNode = node.get("top_layers");
+            var entries = topLayersNode.fields();
+            while (entries.hasNext()) {
+                Map.Entry<String, JsonNode> entry = entries.next();
+
+                UUID uuid = UUID.fromString(entry.getKey());
+                topLayers.put(typeRepository.getTypeByUUID(uuid), entry.getValue().asInt());
+            }
+
+            // Create outfit type and add to database
+            OutfitType outfitType = new OutfitType(UUID.randomUUID(), name, topLayers, bottoms);
+            outfitTypeRepository.addOutfitType(outfitType);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return new ResponseEntity<>(payload, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/api/getoutfittype")
+    public List<OutfitType> getOutfitType(@RequestParam(value = "uuid", required = false) String uuid) {
+        // If no id is provided then return all outfit types
+        if (uuid == null) {
+            List<OutfitType> outfitTypes = outfitTypeRepository.getAllOutfitTypes();
+
+            log.info("All outfit types requested");
+
+            return outfitTypes;
+        } else {
+            OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(uuid);
+
+            log.info("Outfit type requested: " + uuid);
+
+            List<OutfitType> outfitTypes = new ArrayList<>();
+            outfitTypes.add(outfitType);
+
+            return outfitTypes;
+
+        }
+    }
+
     /**
      * This is where a LOT of work can be done to improve clothes choosing algorithm
      *
@@ -43,7 +105,7 @@ public class OutfitRestController {
     @PostMapping(path = "/api/getoutfit",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> add(@RequestBody String payload) {
+    public ResponseEntity<String> getOutfit(@RequestBody String payload) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
@@ -65,16 +127,17 @@ public class OutfitRestController {
             Collections.shuffle(colors);
 
             // Gets list of clothes type to filter down multiple top layers to one type per layer
+            int currentLayer = 1;
             List<Type> types = new ArrayList<>();
-            for (int layer = 0 ; layer < outfitType.getLayers() ; layer++) {
+            while (currentLayer < outfitType.getLayers())
                 for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
-                    // Looks for a type with a layer which matches the current layer being searched for
-                    if (((Integer) entry.getValue()) == (layer + 1)) {
-                        Type t = (Type) entry.getKey();
-                        types.add(t);
-                    }
+                    Type t = (Type) entry.getKey();
+                        // Looks for a type with a layer which matches the current layer being searched for
+                        if (((Integer) entry.getValue()) == currentLayer) {
+                            types.add(t);
+                            currentLayer++;
+                        }
                 }
-            }
 
             // Selects a random bottom type
             List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
