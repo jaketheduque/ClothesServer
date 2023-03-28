@@ -13,12 +13,12 @@
             border-style: solid;
             border-color: black;
         }
-
+        
         .type_icon {
             height: 40px;
             width: 40px;
         }
-
+        
         #loading_overlay {
             /* Sit on top of the page content */
             position: fixed;
@@ -52,8 +52,7 @@
                                     <label for="given_color">
                                         <h4>Color:</h4>
                                     </label>
-                                    <input type="color" id="given_color" value="#000000" ng-disabled="randomColor"
-                                        ng-model="color">
+                                    <input type="color" id="given_color" value="#000000" ng-disabled="randomColor" ng-model="color">
                                 </div>
                                 <div class="col">
                                     <label class="form-check-label">Random Color?</label>
@@ -65,57 +64,49 @@
                         <div class="row container w-50 mx-auto mb-3" id="color_scheme_picker">
                             <h4>Color Schemes:</h4>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome"
-                                    ng-model="selectedMode" value="monochrome " checked>
+                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome" ng-model="selectedMode" value="monochrome " checked>
                                 <label class="form-check-label" for="monochrome">
                                     Monochrome
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome_dark"
-                                    ng-model="selectedMode" value="monochrome-dark">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome_dark" ng-model="selectedMode" value="monochrome-dark">
                                 <label class="form-check-label" for="monochrome_dark">
                                     Monochrome Dark
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome_light"
-                                    ng-model="selectedMode" value="monochrome-light">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="monochrome_light" ng-model="selectedMode" value="monochrome-light">
                                 <label class="form-check-label" for="monochrome_light">
                                     Monochrome Light
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="analogic"
-                                    ng-model="selectedMode" value="analogic">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="analogic" ng-model="selectedMode" value="analogic">
                                 <label class="form-check-label" for="analogic">
                                     Analogic
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="complement"
-                                    ng-model="selectedMode" value="complement">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="complement" ng-model="selectedMode" value="complement">
                                 <label class="form-check-label" for="complement">
                                     Complement
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="analogic_complement"
-                                    ng-model="selectedMode" value="analogic-complement">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="analogic_complement" ng-model="selectedMode" value="analogic-complement">
                                 <label class="form-check-label" for="analogic_complement">
                                     Analogic Complement
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="triad"
-                                    ng-model="selectedMode" value="triad">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="triad" ng-model="selectedMode" value="triad">
                                 <label class="form-check-label" for="triad">
                                     Triad
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="scheme_type" id="quad"
-                                    ng-model="selectedMode" value="quad">
+                                <input class="form-check-input" type="radio" name="scheme_type" id="quad" ng-model="selectedMode" value="quad">
                                 <label class="form-check-label" for="quad">
                                     Quad
                                 </label>
@@ -159,62 +150,45 @@
                             <tr>
                                 <th>{{item.name}}</th>
                                 <td>
-                                    <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false"
-                                        src="/icons/{{item.type.name | lowercase}}.svg"
-                                        data-bs-target="#type_collapsible{{$index}}" ,
-                                        aria-controls="type_collapsible{{$index}}">
+                                    <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false" src="/icons/{{item.type.name | lowercase}}.svg" data-bs-target="#type_collapsible{{$index}}" , aria-controls="type_collapsible{{$index}}">
                                     <div class="collapse w-75 m-2" id="type_collapsible{{$index}}">
                                         <div class="card card-body form-check form-switch">
                                             <h6>{{item.type.name}}</h6>
                                             <div>
                                                 <label class="form-check-label" for="bottom{{$index}}">Bottom?</label>
-                                                <input class="form-check-input m-1" id="bottom{{$index}}"
-                                                    type="checkbox" disabled="disabled" ng-checked="item.type.bottom">
+                                                <input class="form-check-input m-1" id="bottom{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.bottom">
                                             </div>
                                             <div>
                                                 <label class="form-check-label" for="hooded{{$index}}">Hooded?</label>
-                                                <input class="form-check-input m-1" id="hooded{{$index}}"
-                                                    type="checkbox" disabled="disabled" ng-checked="item.type.hooded">
+                                                <input class="form-check-input m-1" id="hooded{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.hooded">
                                             </div>
                                             <div>
                                                 <label class="form-check-label" for="long_sleeve{{$index}}">Long
                                                     Sleeve?</label>
-                                                <input class="form-check-input m-1" id="long_sleeve{{$index}}"
-                                                    type="checkbox" disabled="disabled"
-                                                    ng-checked="item.type.longSleeve">
+                                                <input class="form-check-input m-1" id="long_sleeve{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.longSleeve">
                                             </div>
                                             <div>
-                                                <label class="form-check-label"
-                                                    for="buttoned{{$index}}">Buttoned?</label>
-                                                <input class="form-check-input m-1" id="buttoned{{$index}}"
-                                                    type="checkbox" disabled="disabled" ng-checked="item.type.buttoned">
+                                                <label class="form-check-label" for="buttoned{{$index}}">Buttoned?</label>
+                                                <input class="form-check-input m-1" id="buttoned{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.buttoned">
                                             </div>
                                             <div>
-                                                <label class="form-check-label"
-                                                    for="zippered{{$index}}">Zippered?</label>
-                                                <input class="form-check-input m-1" id="zippered{{$index}}"
-                                                    type="checkbox" disabled="disabled" ng-checked="item.type.zippered">
+                                                <label class="form-check-label" for="zippered{{$index}}">Zippered?</label>
+                                                <input class="form-check-input m-1" id="zippered{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.zippered">
                                             </div>
                                             <div>
-                                                <label class="form-check-label"
-                                                    for="collared{{$index}}">Collared?</label>
-                                                <input class="form-check-input m-1" id="collared{{$index}}"
-                                                    type="checkbox" disabled="disabled" ng-checked="item.type.collared">
+                                                <label class="form-check-label" for="collared{{$index}}">Collared?</label>
+                                                <input class="form-check-input m-1" id="collared{{$index}}" type="checkbox" disabled="disabled" ng-checked="item.type.collared">
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="color_box m-1" ng-style="{'background-color': '{{item.color.hex}}'}"
-                                        title="{{item.color.name}}" ng-click="copyToClipboard(item.color.hex)">
+                                    <div class="color_box m-1" ng-style="{'background-color': '{{item.color.hex}}'}" title="{{item.color.name}}" ng-click="copyToClipboard(item.color.hex)">
                                     </div>
                                 </td>
                                 <td>
                                     <div ng-repeat="secondary_color in item.secondaryColors">
-                                        <div class="color_box m-1"
-                                            ng-style="{'background-color': '{{secondary_color.hex}}'}"
-                                            title="{{secondary_color.name}}"
-                                            ng-click="copyToClipboard(secondary_color.hex)">
+                                        <div class="color_box m-1" ng-style="{'background-color': '{{secondary_color.hex}}'}" title="{{secondary_color.name}}" ng-click="copyToClipboard(secondary_color.hex)">
                                         </div>
                                     </div>
                                 </td>
@@ -230,8 +204,7 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-center w-100 h-100" id="loading_overlay"
-            ng-show="showLoading">
+        <div class="d-flex align-items-center justify-content-center w-100 h-100" id="loading_overlay" ng-show="showLoading">
             <div class="d-flex spinner-border text-light" style="width: 5rem; height: 5rem;" role="status">
             </div>
         </div>
@@ -241,11 +214,11 @@
 <script>
     var app = angular.module("outfitPage", []);
 
-    app.controller("outfitGenerator", function ($scope, $http, $window, $compile, $sce) {
+    app.controller("outfitGenerator", function($scope, $http, $window, $compile, $sce) {
         $scope.randomColor = true;
         $scope.showLoading = false;
 
-        $scope.onSubmitClick = function () {
+        $scope.onSubmitClick = function() {
             if ($scope.color == null && !$scope.randomColor) {
                 $window.alert("Please choose a color or select random generation!")
                 return;
@@ -266,7 +239,7 @@
 
             // Show loading overlay
             $scope.showLoading = true;
-            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode + '&count=' + layers).then(function (schemeResult) {
+            $http.get('https://www.thecolorapi.com/scheme?hex=' + color + '&mode=' + $scope.selectedMode + '&count=' + layers).then(function(schemeResult) {
                 // Create request body
                 const body = {
                     outfit_type_uuid: uuid,
@@ -274,20 +247,20 @@
                 }
                 const json = JSON.stringify(body);
 
-                $http.post('http://localhost:1114/api/getoutfit', json).then(function (clothesResult) {
+                $http.post('/api/getoutfit', json).then(function(clothesResult) {
                     $scope.color_scheme_result = $sce.trustAsHtml('<image src=\"' + schemeResult.data.image.bare + '\">');
                     $scope.clothes = clothesResult.data;
 
                     $scope.showLoading = false;
-                }, function () {
+                }, function() {
                     $window.alert("Error happened when getting outfit!")
                 })
-            }, function () {
+            }, function() {
                 $window.alert("Error happened when getting color scheme!")
             });
         }
 
-        $scope.copyToClipboard = function (copyText) {
+        $scope.copyToClipboard = function(copyText) {
             // Copy the text inside the text field 
             navigator.clipboard.writeText(copyText);
 

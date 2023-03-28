@@ -98,8 +98,8 @@
 <script>
     var app = angular.module("app", []);
 
-    app.controller("controller", function ($scope, $window, $http) {
-        $scope.onSubmitClick = function () {
+    app.controller("controller", function($scope, $window, $http) {
+        $scope.onSubmitClick = function() {
             const name = document.getElementById("outfit_type_name").value;
 
             // Top layers
@@ -129,21 +129,21 @@
 
             const json = JSON.stringify(outfit);
 
-            $http.post('/api/addoutfittype', json).then(function () {
+            $http.post('/api/addoutfittype', json).then(function() {
                 $window.alert("Successfully added outfit type!")
-            }, function () {
+            }, function() {
                 $window.alert("Error happened when adding outfit type!")
             });
         }
 
-        $scope.addLayer = function () {
+        $scope.addLayer = function() {
             var topLayer = Array.from(document.getElementsByClassName("top_layer")).pop();
             var topBody = document.getElementById("top_layers_body");
 
             topBody.innerHTML += topLayer.outerHTML;
         };
 
-        $scope.removeLayer = function () {
+        $scope.removeLayer = function() {
             var table = document.getElementById("top_layers_table");
             var rowCount = table.rows.length;
 
@@ -152,14 +152,14 @@
             table.deleteRow(rowCount - 1);
         };
 
-        $scope.addBottom = function () {
+        $scope.addBottom = function() {
             var topLayer = Array.from(document.getElementsByClassName("bottom_layer")).pop();
             var topBody = document.getElementById("bottom_layers_body");
 
             topBody.innerHTML += topLayer.outerHTML;
         };
 
-        $scope.removeBottom = function () {
+        $scope.removeBottom = function() {
             var table = document.getElementById("bottom_layers_table");
             var rowCount = table.rows.length;
 
