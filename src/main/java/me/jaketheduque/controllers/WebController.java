@@ -38,7 +38,7 @@ public class WebController {
         return "view";
     }
 
-    @RequestMapping("/outfit")
+    @RequestMapping("/")
     public String outfit(Model model) {
         model.addAttribute("outfit_types", outfitTypeRepository.getAllOutfitTypes());
         return "outfit";
