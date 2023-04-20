@@ -1,7 +1,6 @@
 package me.jaketheduque.sql;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import me.jaketheduque.data.Clothes;
 import me.jaketheduque.data.Color;
 import me.jaketheduque.data.Type;

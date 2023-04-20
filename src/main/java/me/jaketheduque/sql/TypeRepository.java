@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface TypeRepository extends CrudRepository<Type, Long> {
+public interface TypeRepository extends CrudRepository<Type, UUID> {
     @Query(value = "SELECT * FROM types", nativeQuery = true)
     List<Type> getAllTypes();
 

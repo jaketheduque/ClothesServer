@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PatternRepository extends CrudRepository<Pattern, Long> {
+public interface PatternRepository extends CrudRepository<Pattern, UUID> {
     @Query(value = "SELECT * FROM patterns", nativeQuery = true)
     List<Pattern> getAllPatterns();
 

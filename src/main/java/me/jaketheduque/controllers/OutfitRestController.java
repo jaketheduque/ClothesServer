@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import me.jaketheduque.data.Clothes;
+import me.jaketheduque.data.LayeredClothes;
 import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
 import me.jaketheduque.sql.ClothesRepository;
@@ -171,6 +172,11 @@ public class OutfitRestController {
             e.printStackTrace();
         }
 
+        return null;
+    }
+
+    @GetMapping(path = "/api/getdayoutfit")
+    public LayeredClothes[] getDayOutfit(@RequestParam(value = "date", required = false) Date date) {
         return null;
     }
 }

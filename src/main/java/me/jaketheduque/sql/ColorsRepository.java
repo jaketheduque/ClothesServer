@@ -6,9 +6,10 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface ColorsRepository extends CrudRepository<Color, Long> {
+public interface ColorsRepository extends CrudRepository<Color, UUID> {
     @Query(value = "SELECT * FROM colors", nativeQuery = true)
     List<Color> getAllColors();
 
