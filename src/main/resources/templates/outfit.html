@@ -147,6 +147,7 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th scope="col">Layer</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Type</th>
                                 <th scope="col">Primary Color</th>
@@ -158,6 +159,7 @@
                         </thead>
                         <tbody ng-repeat="item in clothes">
                             <tr>
+                                <td>{{item.layer}}</td>
                                 <th>{{item.name}}</th>
                                 <td>
                                     <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false"

@@ -70,7 +70,8 @@ public class ClothesRepository {
                         typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
                         patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
                         result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))),
-                        result.getDate("last_date_worn")));
+                        result.getDate("last_date_worn"),
+                        result.getBoolean("owned")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,7 +115,8 @@ public class ClothesRepository {
                         typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
                         patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
                         result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))),
-                        result.getDate("last_date_worn"));
+                        result.getDate("last_date_worn"),
+                        result.getBoolean("owned"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -163,7 +165,8 @@ public class ClothesRepository {
                                 typeRepository.getTypeByUUID(UUID.fromString(result.getString("type_uuid"))),
                                 patternRepository.getPatternByUUID(UUID.fromString(result.getString("pattern_uuid"))),
                                 result.getString("brand_uuid") == null ? null : brandRepository.getBrandByUUID(UUID.fromString(result.getString("brand_uuid"))),
-                                result.getDate("last_date_worn"));
+                                result.getDate("last_date_worn"),
+                                result.getBoolean("owned"));
 
                         colorDifferenceMap.put(result.getFloat("color_difference"), item);
                     }

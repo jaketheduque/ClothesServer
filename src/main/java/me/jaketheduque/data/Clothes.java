@@ -35,7 +35,10 @@ public class Clothes {
     @Column(name="last_date_worn")
     private Date lastDateWorn;
 
-    public Clothes(UUID clothes_uuid, String name, Color color, Set<Color> secondaryColors, Type type, Pattern pattern, Brand brand, Date lastDateWorn) {
+    @Column(name="owned")
+    private boolean owned;
+
+    public Clothes(UUID clothes_uuid, String name, Color color, Set<Color> secondaryColors, Type type, Pattern pattern, Brand brand, Date lastDateWorn, boolean owned) {
         this.clothes_uuid = clothes_uuid;
         this.name = name;
         this.color = color;
@@ -44,6 +47,7 @@ public class Clothes {
         this.pattern = pattern;
         this.brand = brand;
         this.lastDateWorn = lastDateWorn;
+        this.owned = owned;
     }
 
     public Clothes() {
@@ -113,6 +117,14 @@ public class Clothes {
         this.lastDateWorn = lastDateWorn;
     }
 
+    public boolean isOwned() {
+        return owned;
+    }
+
+    public void setOwned(boolean owned) {
+        this.owned = owned;
+    }
+
     @Override
     public String toString() {
         return "Clothes{" +
@@ -123,7 +135,8 @@ public class Clothes {
                 ", type=" + type +
                 ", pattern=" + pattern +
                 ", brand=" + brand +
-                ", lastWornDate=" + lastDateWorn +
+                ", lastDateWorn=" + lastDateWorn +
+                ", owned=" + owned +
                 '}';
     }
 

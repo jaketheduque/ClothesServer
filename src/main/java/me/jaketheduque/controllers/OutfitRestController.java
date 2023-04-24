@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import me.jaketheduque.data.Clothes;
 import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,13 +137,13 @@ public class OutfitRestController {
 
             // Gets list of clothes type to filter down multiple top layers to one type per layer
             int currentLayer = 1;
-            List<Type> types = new ArrayList<>();
+            List<Pair<Type, Integer>> types = new ArrayList<>();
             while (currentLayer < outfitType.getLayers())
                 for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
                     Type t = (Type) entry.getKey();
                         // Looks for a type with a layer which matches the current layer being searched for
                         if (((Integer) entry.getValue()) == currentLayer) {
-                            types.add(t);
+                            types.add(Pair.of(t, currentLayer));
                             currentLayer++;
                         }
                 }
@@ -151,29 +151,30 @@ public class OutfitRestController {
             // Selects a random bottom type
             List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
             Collections.shuffle(bottoms);
-            types.add(bottoms.get(0));
+            types.add(Pair.of(bottoms.get(0), 1));
 
             // Gets clothes list from list of types and list of colors
-            List<Clothes> clothes = new ArrayList<>();
+            List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
             for (int i = 0 ; i < types.size() ; i++) {
-                Clothes item = clothesRepository.getClothesFromTypeAndColors(types.get(i), colors.toArray(new Color[0])).get(0);
-                clothes.add(item);
+                Clothes item = clothesRepository.getClothesFromTypeAndColors(types.get(i).getFirst(), colors.toArray(new Color[0])).get(0);
+                clothes.add(Pair.of(item, types.get(i).getSecond()));
             }
 
-            // Goes through each clothes type and chooses a clothing item based on the color
-            // Also adds the JSON node to array node
-            ArrayNode array = objectMapper.createArrayNode();
+            // Creates base dictionary node for clothes
+            ArrayNode clothesNode = objectMapper.createArrayNode();
 
-            // Adds each type in the final types list to the array node to be sent as response
-            for (Clothes c : clothes) {
-                JsonNode itemNode = objectMapper.valueToTree(c);
-                array.add(itemNode);
+            // Adds each clothing item found to clothesNode as a dictionary value with layer as the key
+            for (var c : clothes) {
+                ObjectNode itemNode = objectMapper.valueToTree(c.getFirst());
+                itemNode.set("layer", objectMapper.valueToTree(c.getSecond()));
+
+                clothesNode.add(itemNode);
             }
 
             log.info("Generated outfit of type '{}' with {} items", outfitType.getName(), outfitType.getLayers());
-            log.info("Item names: {}", clothes.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+            log.info("Item names: {}", clothes.stream().map(c -> c.getFirst().getName()).collect(Collectors.joining(", ")));
 
-            return new ResponseEntity<> (array.toString(), HttpStatus.OK);
+            return new ResponseEntity<> (clothesNode.toString(), HttpStatus.OK);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
