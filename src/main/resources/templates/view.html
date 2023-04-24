@@ -77,6 +77,7 @@
                         <th scope="col">Secondary Colors</th>
                         <th scope="col" style="cursor:pointer" onclick="sortClothes(5)">Pattern</th>
                         <th scope="col" style="cursor:pointer" onclick="sortClothes(6)">Brand</th>
+                        <th scope="col" style="cursor:pointer" onclick="sortClothes(7)">Last Date Worn</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
@@ -147,6 +148,10 @@
                         <td th:if="${clothes.brand==null}" sort-value="None">None</td>
                         <td th:text="${clothes.brand.name}" th:unless="${clothes.brand==null}"
                             th:attr="sort-value=|${clothes.brand.name}|"></td>
+                        <td th:if="${clothes.getLastDateWorn()==null}" sort-value="0"></td>
+                        <td th:unless="${clothes.getLastDateWorn()==null}"
+                            th:text="${#dates.format(clothes.getLastDateWorn(), 'M/dd/yyyy')}"
+                            th:attr="sort-value=|${clothes.getLastDateWorn().getTime()}|"></td>
                         <td><button class="btn btn-success add-to-outfit-button"
                                 th:attr="onclick=|addToOutfit('${clothes.getUUID()}')|">Add to Outfit</button></td>
                     </tr>

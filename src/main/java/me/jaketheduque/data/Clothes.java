@@ -3,6 +3,7 @@ package me.jaketheduque.data;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Immutable;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,7 +32,10 @@ public class Clothes {
     @ManyToOne
     private Brand brand;
 
-    public Clothes(UUID clothes_uuid, String name, Color color, Set<Color> secondaryColors, Type type, Pattern pattern, Brand brand) {
+    @Column(name="last_date_worn")
+    private Date lastDateWorn;
+
+    public Clothes(UUID clothes_uuid, String name, Color color, Set<Color> secondaryColors, Type type, Pattern pattern, Brand brand, Date lastDateWorn) {
         this.clothes_uuid = clothes_uuid;
         this.name = name;
         this.color = color;
@@ -39,6 +43,7 @@ public class Clothes {
         this.type = type;
         this.pattern = pattern;
         this.brand = brand;
+        this.lastDateWorn = lastDateWorn;
     }
 
     public Clothes() {
@@ -100,6 +105,14 @@ public class Clothes {
         this.brand = brand;
     }
 
+    public Date getLastDateWorn() {
+        return lastDateWorn;
+    }
+
+    public void setLastDateWorn(Date lastDateWorn) {
+        this.lastDateWorn = lastDateWorn;
+    }
+
     @Override
     public String toString() {
         return "Clothes{" +
@@ -110,6 +123,7 @@ public class Clothes {
                 ", type=" + type +
                 ", pattern=" + pattern +
                 ", brand=" + brand +
+                ", lastWornDate=" + lastDateWorn +
                 '}';
     }
 

@@ -153,6 +153,7 @@
                                 <th scope="col">Secondary Colors</th>
                                 <th scope="col">Pattern</th>
                                 <th scope="col">Brand</th>
+                                <th scope="col">Last Date Worn</th>
                             </tr>
                         </thead>
                         <tbody ng-repeat="item in clothes">
@@ -220,6 +221,7 @@
                                 </td>
                                 <td>{{item.pattern.name}}</td>
                                 <td>{{item.brand.name}}</td>
+                                <td>{{item.lastDateWorn | date:"M/dd/yyyy"}}</td>
                             </tr>
                         </tbody>
                     </table>
