@@ -80,7 +80,7 @@ public class ClothesRepository {
 
     public Clothes getClothesFromID(String uuid) {
         Clothes item = null;
-        String sql = "SELECT * FROM v_clothes_full_replacement WHERE clothes_uuid=UUID_TO_BIN(?)";
+        String sql = "SELECT * FROM v_clothes_full_replacement WHERE clothes_uuid=?";
 
         // Open a connection
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);

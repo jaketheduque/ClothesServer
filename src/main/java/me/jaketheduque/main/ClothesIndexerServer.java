@@ -8,6 +8,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.util.Pair;
+
+import java.util.UUID;
 
 @ComponentScan("me.jaketheduque")
 @EnableJpaRepositories("me.jaketheduque.sql")
@@ -16,6 +19,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class ClothesIndexerServer {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(ClothesIndexerServer.class, args);
 	}
 

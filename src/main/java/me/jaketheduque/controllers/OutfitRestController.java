@@ -5,21 +5,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import me.jaketheduque.data.Clothes;
-import me.jaketheduque.data.LayeredClothes;
 import me.jaketheduque.data.OutfitType;
 import me.jaketheduque.data.Type;
 import me.jaketheduque.sql.ClothesRepository;
+import me.jaketheduque.sql.DailyClothesRepository;
 import me.jaketheduque.sql.OutfitTypeRepository;
 import me.jaketheduque.sql.TypeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +36,9 @@ public class OutfitRestController {
 
     @Autowired
     private ClothesRepository clothesRepository;
+
+    @Autowired
+    private DailyClothesRepository dailyClothesRepository;
 
     @Autowired
     private TypeRepository typeRepository;
@@ -170,13 +176,35 @@ public class OutfitRestController {
             return new ResponseEntity<> (array.toString(), HttpStatus.OK);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return null;
     }
 
-    @GetMapping(path = "/api/getdayoutfit")
-    public LayeredClothes[] getDayOutfit(@RequestParam(value = "date", required = false) Date date) {
-        return null;
+    @PostMapping(path = "/api/adddailyoutfit",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addDailyOutfit(@RequestBody String payload) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            JsonNode node = objectMapper.readTree(payload);
+            Date date = Date.valueOf(node.get("date").asText());
+
+            var clothes = node.get("layered_uuids").fields();
+
+            var layeredClothes = new ArrayList<Pair<Clothes, Integer>>();
+            while (clothes.hasNext()) {
+                var item = clothes.next();
+
+                layeredClothes.add(Pair.of(clothesRepository.getClothesFromID(item.getKey()), item.getValue().asInt()));
+            }
+
+            dailyClothesRepository.insertClothes(layeredClothes, date);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

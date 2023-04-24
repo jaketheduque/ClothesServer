@@ -100,10 +100,6 @@ public class Clothes {
         this.brand = brand;
     }
 
-    public LayeredClothes getLayeredClothes(int layer) {
-        return new LayeredClothes(clothes_uuid, name, color, secondaryColors, type, pattern, brand, layer);
-    }
-
     @Override
     public String toString() {
         return "Clothes{" +

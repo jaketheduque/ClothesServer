@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div>
+    <div ng-controller="dailyOutfitController">
         <div id="outfit-list-overlay"
             class="visually-hidden w-100 h-100 position-absolute d-flex flex-row justify-content-end">
             <div class="flex-fill bg-black opacity-50"></div>
@@ -50,8 +50,11 @@
                     </thead>
                     <tbody></tbody>
                 </table>
+                <div class="d-flex justify-content-center mb-3">
+                    <input type="date" id="date" name="date" ng-model="date">
+                </div>
                 <div class="d-flex justify-content-center">
-                    <button class="btn btn-primary mx-auto">Submit!</button>
+                    <button class="btn btn-primary mx-auto" ng-click="onSubmitClick()">Submit!</button>
                 </div>
 
             </div>
@@ -229,6 +232,7 @@
             var newRow = body.insertRow();
 
             newRow.setAttribute("clothes-uuid", id);
+            newRow.classList.add("daily_clothing_item")
             newRow.insertCell().innerHTML = "<input type='number' min=1>"
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(0).outerHTML;
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(1).outerHTML;
@@ -255,6 +259,41 @@
 
 <script>
     var app = angular.module("viewPage", []);
+
+    app.run(function ($rootScope) {
+        $rootScope.date = new Date();
+    })
+
+    app.controller("dailyOutfitController", function ($scope, $http, $window) {
+        $scope.onSubmitClick = function () {
+            const utc = $scope.date;
+            const pst = new Date(utc.getTime() - (utc.getTimezoneOffset() * 60000));;
+            const date = pst.toISOString().split("T")[0];
+
+            const items = document.getElementsByClassName("daily_clothing_item");
+
+            const layeredUUIDs = {};
+            for (let i = 0; i < items.length; i++) {
+                var item = items.item(i);
+                layeredUUIDs[item.getAttribute("clothes-uuid")] = parseInt(item.children.item(0).children.item(0).value);
+            }
+
+            const body = {
+                date: date,
+                layered_uuids: layeredUUIDs
+            }
+
+            const json = JSON.stringify(body);
+
+            $http.post('/api/adddailyoutfit', json).then(function () {
+                $window.alert("Successfully logged outfit!");
+            }, function () {
+                $window.alert("Error happened when logging outfit!");
+            })
+
+            document.getElementById("outfit-table").children.item(1).innerHTML = "";
+        }
+    })
 
     app.controller("searchController", function ($scope, $window) {
         $scope.updateTable = function () {
