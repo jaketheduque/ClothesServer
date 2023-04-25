@@ -134,7 +134,7 @@
                         </div>
 
                         <div class="row container w-100 mx-auto mb-3">
-                            <button type="button" class="btn btn-dark" ng-click="onSubmitClick(selectedMode)">
+                            <button type="button" class="btn btn-dark" ng-click="onGenerateOutfitClick(selectedMode)">
                                 <h1>Generate outfit</h1>
                             </button>
                         </div>
@@ -157,8 +157,8 @@
                                 <th scope="col">Last Date Worn</th>
                             </tr>
                         </thead>
-                        <tbody ng-repeat="item in clothes">
-                            <tr>
+                        <tbody>
+                            <tr id="{{item.uuid}}" class="outfit-item" ng-repeat="item in clothes">
                                 <td>{{item.layer}}</td>
                                 <th>{{item.name}}</th>
                                 <td>
@@ -228,7 +228,13 @@
                         </tbody>
                     </table>
 
-                    <div class="d-flex" ng-bind-html="color_scheme_result">
+                    <div class="d-flex mb-3" ng-bind-html="color_scheme_result">
+
+                    </div>
+                    <div class="row container w-100 mx-auto mb-3">
+                        <button type="button" class="btn btn-primary" ng-click="onOutfitSubmitClick()">
+                            <h1>Submit for today's outfit!</h1>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -249,7 +255,7 @@
         $scope.randomColor = true;
         $scope.showLoading = false;
 
-        $scope.onSubmitClick = function () {
+        $scope.onGenerateOutfitClick = function () {
             if ($scope.color == null && !$scope.randomColor) {
                 $window.alert("Please choose a color or select random generation!")
                 return;
@@ -289,6 +295,20 @@
             }, function () {
                 $window.alert("Error happened when getting color scheme!")
             });
+        }
+
+        $scope.onOutfitSubmitClick = function () {
+            const clothes = document.getElementsByClassName("outfit-item");
+
+            var uuids = "";
+            for (var i = 0; i < clothes.length; i++) {
+                const item = clothes.item(i);
+                uuids += item.getAttribute("id");
+                uuids += ",";
+            }
+            uuids = uuids.substring(0, uuids.length - 1);
+
+            window.location.href = "/view?uuids=" + uuids;
         }
 
         $scope.copyToClipboard = function (copyText) {
