@@ -220,15 +220,13 @@ public class ClothesRepository {
                 stmt.setString(14, c.getBrand() == null ? "" : c.getBrand().getName());
 
                 stmt.executeUpdate();
-
-                return true;
             }
+
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
 
             return false;
         }
-
-        return false;
     }
 }

@@ -237,6 +237,12 @@
 
                 const json = JSON.stringify(clothes);
 
+                // Checks if any fields are blank
+                if (clothes.name == '' || type.name == '' || pattern.name == '' || brand.name == '') {
+                    $window.alert("Please ensure all fields are filled out!")
+                    return;
+                }
+
                 $http.post('/api/addclothes', json).then(function () {
                     $window.alert("Successfully added clothing item!")
                 }, function () {
