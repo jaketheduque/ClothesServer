@@ -126,7 +126,7 @@ public class ClothesRepository {
     }
 
     public List<Clothes> getClothesFromTypeAndColors(Type type, java.awt.Color... colors) {
-        String sql = "SELECT *, CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT) AS color_difference FROM Main.v_clothes_full_replacement WHERE type_uuid = ? ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
+        String sql = "SELECT *, CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT) AS color_difference FROM v_clothes_full_replacement WHERE type_uuid = ? ORDER BY CAST(RGB_DIFFERENCE(color_rgb, ?) AS FLOAT)";
         List<Clothes> clothes = new ArrayList<>();
 
         // Go through each color in provided colors list and add them to map
