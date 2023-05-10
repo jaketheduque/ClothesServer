@@ -84,6 +84,53 @@ public class OutfitTypeRepository {
         return outfitType;
     }
 
+    public OutfitType getRandomOutfitType() {
+        OutfitType outfitType = null;
+        String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) AS uuid FROM `clothes-server`.outfit_types ORDER BY RAND()";
+
+        // Open a connection
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            // Gets a random outfit type
+            String uuid = null;
+            try (ResultSet result = stmt.executeQuery()) {
+                result.next();
+                uuid = result.getString("uuid");
+            }
+
+            // Sets outfit_type_uuid before executing query
+            stmt.setString(1, uuid);
+
+            // Get all types
+            try (ResultSet result = stmt.executeQuery()) {
+                HashMap<Type, Integer> typeLayerMap = new HashMap<>();
+                List<Type> bottoms = new ArrayList<>();
+
+                // "Static" variables which do not change from row to row
+                UUID outfitTypeUUID = UUID.fromString(uuid);
+                String outfitTypeName = null;
+                while (result.next()) {
+                    outfitTypeName = result.getString("outfit_name");
+
+                    UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
+                    Type type = typeRepository.getTypeByUUID(typeUUID);
+
+                    if (result.getBoolean("bottom")) { // If bottom add to list
+                        bottoms.add(type);
+                    } else {
+                        typeLayerMap.put(type, result.getInt("layer"));
+                    }
+                }
+
+                outfitType = new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return outfitType;
+    }
+
     public boolean addOutfitType(OutfitType outfitType) {
         UUID outfitTypeUUID = UUID.randomUUID();
         String sql = "INSERT INTO outfit_types VALUES (UUID_TO_BIN(?), ?)"; // Parameters: Outfit type UUID, Outfit type name

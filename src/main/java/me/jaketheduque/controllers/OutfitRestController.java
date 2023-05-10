@@ -12,6 +12,7 @@ import me.jaketheduque.sql.ClothesRepository;
 import me.jaketheduque.sql.DailyClothesRepository;
 import me.jaketheduque.sql.OutfitTypeRepository;
 import me.jaketheduque.sql.TypeRepository;
+import me.jaketheduque.util.OutfitGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,52 +120,19 @@ public class OutfitRestController {
 
         try {
             JsonNode node = objectMapper.readTree(payload);
-            OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
-            ArrayNode colorsNode = ((ArrayNode) node.get("colors"));
-
-            // If no colors provided then select clothes at random
-            /**
-             * TO-DO Add random selection here with no colors involved and figure out how to best format JSON body from front-end to work with that
-             */
+            String selectionMethod = node.get("type").asText();
 
 
-            // Get colors of the scheme
-            List<Color> colors = new ArrayList<>();
-            for (JsonNode color : colorsNode) {
-                int r = color.get("rgb").get("r").asInt();
-                int g = color.get("rgb").get("g").asInt();
-                int b = color.get("rgb").get("b").asInt();
+            var clothes = new ArrayList<Pair<Clothes, Integer>>();
+            switch (selectionMethod) {
+                case "random":
 
-                colors.add(new Color(r, g, b));
+                    break;
+                case "color-scheme":
+                    OutfitGenerator.colorSchemeGenerate(node);
+                    break;
             }
 
-            // Shuffles colors list
-            Collections.shuffle(colors);
-
-            // Gets list of clothes type to filter down multiple top layers to one type per layer
-            int currentLayer = 1;
-            List<Pair<Type, Integer>> types = new ArrayList<>();
-            while (currentLayer < outfitType.getLayers())
-                for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
-                    Type t = (Type) entry.getKey();
-                        // Looks for a type with a layer which matches the current layer being searched for
-                        if (((Integer) entry.getValue()) == currentLayer) {
-                            types.add(Pair.of(t, currentLayer));
-                            currentLayer++;
-                        }
-                }
-
-            // Selects a random bottom type
-            List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
-            Collections.shuffle(bottoms);
-            types.add(Pair.of(bottoms.get(0), 1));
-
-            // Gets clothes list from list of types and list of colors
-            List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
-            for (int i = 0 ; i < types.size() ; i++) {
-                Clothes item = clothesRepository.getClothesFromTypeAndColors(types.get(i).getFirst(), colors.toArray(new Color[0])).get(0);
-                clothes.add(Pair.of(item, types.get(i).getSecond()));
-            }
 
             // Creates base dictionary node for clothes
             ArrayNode clothesNode = objectMapper.createArrayNode();
@@ -177,7 +145,7 @@ public class OutfitRestController {
                 clothesNode.add(itemNode);
             }
 
-            log.info("Generated outfit of type '{}' with {} items", outfitType.getName(), outfitType.getLayers());
+
             log.info("Item names: {}", clothes.stream().map(c -> c.getFirst().getName()).collect(Collectors.joining(", ")));
 
             return new ResponseEntity<> (clothesNode.toString(), HttpStatus.OK);
