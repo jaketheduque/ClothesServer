@@ -126,13 +126,14 @@ public class OutfitRestController {
             String selectionMethod = node.get("type").asText();
 
 
-            var clothes = new ArrayList<Pair<Clothes, Integer>>();
+            List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
+            log.info("Selection method: " + selectionMethod);
             switch (selectionMethod) {
                 case "random":
 
                     break;
                 case "color-scheme":
-                    outfitGenerator.colorSchemeGenerate(node);
+                    clothes = outfitGenerator.colorSchemeGenerate(node);
                     break;
             }
 
