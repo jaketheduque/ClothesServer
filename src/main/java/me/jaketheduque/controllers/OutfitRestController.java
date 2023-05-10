@@ -122,6 +122,12 @@ public class OutfitRestController {
             OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
             ArrayNode colorsNode = ((ArrayNode) node.get("colors"));
 
+            // If no colors provided then select clothes at random
+            /**
+             * TO-DO Add random selection here with no colors involved and figure out how to best format JSON body from front-end to work with that
+             */
+
+
             // Get colors of the scheme
             List<Color> colors = new ArrayList<>();
             for (JsonNode color : colorsNode) {

@@ -27,7 +27,7 @@ public class OutfitTypeRepository {
 
     public List<OutfitType> getAllOutfitTypes() {
         ArrayList<OutfitType> outfitTypes = new ArrayList<>();
-        String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) AS outfit_type_uuid FROM Main.outfit_types";
+        String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) AS outfit_type_uuid FROM outfit_types";
 
         // Open a connection
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
@@ -46,7 +46,7 @@ public class OutfitTypeRepository {
 
     public OutfitType getOutfitTypeByUUID(String uuid) {
         OutfitType outfitType = null;
-        String sql = "SELECT * FROM Main.v_type_layers_replacement WHERE outfit_type_uuid=?";
+        String sql = "SELECT * FROM v_type_layers_replacement WHERE outfit_type_uuid=?";
 
         // Open a connection
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
