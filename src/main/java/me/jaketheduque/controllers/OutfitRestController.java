@@ -44,6 +44,9 @@ public class OutfitRestController {
     @Autowired
     private TypeRepository typeRepository;
 
+    @Autowired
+    private OutfitGenerator outfitGenerator;
+
     @PostMapping(path = "/api/addoutfittype",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -129,7 +132,7 @@ public class OutfitRestController {
 
                     break;
                 case "color-scheme":
-                    OutfitGenerator.colorSchemeGenerate(node);
+                    outfitGenerator.colorSchemeGenerate(node);
                     break;
             }
 

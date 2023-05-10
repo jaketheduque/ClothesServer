@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
-import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,23 +21,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Component("outfitGenerator")
 public class OutfitGenerator {
     private static final Logger log = LoggerFactory.getLogger(OutfitGenerator.class);
 
     @Autowired
-    private static ClothesRepository clothesRepository;
+    private ClothesRepository clothesRepository;
 
     @Autowired
-    private static OutfitTypeRepository outfitTypeRepository;
+    private OutfitTypeRepository outfitTypeRepository;
 
-    public static List<Pair<Clothes, Integer>> randomGenerate(JsonNode node) {
+    public List<Pair<Clothes, Integer>> randomGenerate(JsonNode node) {
         OutfitType outfitType = outfitTypeRepository.getRandomOutfitType();
 
         // TODO Finish this method up
         return null;
     }
 
-    public static List<Pair<Clothes, Integer>> colorSchemeGenerate(JsonNode node) {
+    public List<Pair<Clothes, Integer>> colorSchemeGenerate(JsonNode node) {
         ArrayNode colorsNode = ((ArrayNode) node.get("colors"));
         OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
 
