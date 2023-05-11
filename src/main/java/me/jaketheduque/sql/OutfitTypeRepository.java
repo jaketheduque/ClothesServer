@@ -85,7 +85,6 @@ public class OutfitTypeRepository {
     }
 
     public OutfitType getRandomOutfitType() {
-        OutfitType outfitType = null;
         String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) AS uuid FROM `clothes-server`.outfit_types ORDER BY RAND()";
 
         // Open a connection
@@ -125,14 +124,62 @@ public class OutfitTypeRepository {
                         }
                     }
 
-                    outfitType = new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
+                    return new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
                 }
             }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
-        return outfitType;
+        return null;
+    }
+    
+    public OutfitType getRandomOutfitTypeWithType(Type type) {
+      // Find a random outfit type with clothes type
+      String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) FROM v_type_layers_replacement WHERE type_uuid=UUID_TO_BIN(?) ORDER BY RAND()";
+
+        // Open a connection
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD)) {
+          String uuid = null;
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try (ResultSet result = stmt.executeQuery()) {
+                  // Get outfit type uuid
+                  result.next();
+                    uuid = result.getString("uuid");
+                }
+            }
+            
+            // Create outfit type Object
+            sql = "SELECT * FROM v_type_layers_replacement WHERE outfit_type_uuid=?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, uuid); // Set outfit type uuid
+                try (ResultSet result = stmt.executeQuery()) {
+                    HashMap<Type, Integer> typeLayerMap = new HashMap<>();
+                    List<Type> bottoms = new ArrayList<>();
+
+                    // "Static" variables which do not change from row to row
+                    UUID outfitTypeUUID = UUID.fromString(uuid);
+                    String outfitTypeName = null;
+
+                    while (result.next()) {
+                        outfitTypeName = result.getString("outfit_name");
+
+                        UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
+                        Type type = typeRepository.getTypeByUUID(typeUUID);
+
+                        if (result.getBoolean("bottom")) { // If bottom add to list
+                            bottoms.add(type);
+                        } else {
+                            typeLayerMap.put(type, result.getInt("layer"));
+                        }
+                    }
+
+                    return new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
+                }
+            }
+        }
+      
+        return null;
     }
 
     public boolean addOutfitType(OutfitType outfitType) {
