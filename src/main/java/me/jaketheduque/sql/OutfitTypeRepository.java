@@ -89,44 +89,48 @@ public class OutfitTypeRepository {
         String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) AS uuid FROM `clothes-server`.outfit_types ORDER BY RAND()";
 
         // Open a connection
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            // Gets a random outfit type
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD)) {
             String uuid = null;
-            try (ResultSet result = stmt.executeQuery()) {
-                result.next();
-                uuid = result.getString("uuid");
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                // Gets a random outfit type
+                try (ResultSet result = stmt.executeQuery()) {
+                    result.next();
+                    uuid = result.getString("uuid");
+                }
             }
 
             // Sets outfit_type_uuid before executing query
-            stmt.setString(1, uuid);
+            sql = "SELECT * FROM v_type_layers_replacement WHERE outfit_type_uuid=?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, uuid);
 
-            // Get all types
-            try (ResultSet result = stmt.executeQuery()) {
-                HashMap<Type, Integer> typeLayerMap = new HashMap<>();
-                List<Type> bottoms = new ArrayList<>();
+                try (ResultSet result = stmt.executeQuery()) {
+                    HashMap<Type, Integer> typeLayerMap = new HashMap<>();
+                    List<Type> bottoms = new ArrayList<>();
 
-                // "Static" variables which do not change from row to row
-                UUID outfitTypeUUID = UUID.fromString(uuid);
-                String outfitTypeName = null;
-                while (result.next()) {
-                    outfitTypeName = result.getString("outfit_name");
+                    // "Static" variables which do not change from row to row
+                    UUID outfitTypeUUID = UUID.fromString(uuid);
+                    String outfitTypeName = null;
 
-                    UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
-                    Type type = typeRepository.getTypeByUUID(typeUUID);
+                    while (result.next()) {
+                        outfitTypeName = result.getString("outfit_name");
 
-                    if (result.getBoolean("bottom")) { // If bottom add to list
-                        bottoms.add(type);
-                    } else {
-                        typeLayerMap.put(type, result.getInt("layer"));
+                        UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
+                        Type type = typeRepository.getTypeByUUID(typeUUID);
+
+                        if (result.getBoolean("bottom")) { // If bottom add to list
+                            bottoms.add(type);
+                        } else {
+                            typeLayerMap.put(type, result.getInt("layer"));
+                        }
                     }
-                }
 
-                outfitType = new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
+                    outfitType = new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
         return outfitType;
     }

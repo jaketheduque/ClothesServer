@@ -31,12 +31,38 @@ public class OutfitGenerator {
     @Autowired
     private OutfitTypeRepository outfitTypeRepository;
 
-    public List<Pair<Clothes, Integer>> randomGenerate(JsonNode node) {
+    /**
+     * Complete random generation (random outfit type etc.)
+     */
+    public List<Pair<Clothes, Integer>> randomGenerate() {
         OutfitType outfitType = outfitTypeRepository.getRandomOutfitType();
 
-        // Quick testing android IDE pt. 2
-        // TODO Finish this method up
-        return null;
+        // Gets list of clothes type to filter down multiple top layers to one type per layer
+        int currentLayer = 1;
+        List<Pair<Type, Integer>> types = new ArrayList<>();
+        while (currentLayer < outfitType.getLayers())
+            for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
+                Type t = (Type) entry.getKey();
+                // Looks for a type with a layer which matches the current layer being searched for
+                if (((Integer) entry.getValue()) == currentLayer) {
+                    types.add(Pair.of(t, currentLayer));
+                    currentLayer++;
+                }
+            }
+
+        // Selects a random bottom type
+        List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
+        Collections.shuffle(bottoms);
+        types.add(Pair.of(bottoms.get(0), 1));
+
+        // Gets clothes list from list of types and list of colors
+        List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
+        for (int i = 0 ; i < types.size() ; i++) {
+            Clothes item = clothesRepository.getRandomItemFromType(types.get(i).getFirst());
+            clothes.add(Pair.of(item, types.get(i).getSecond()));
+        }
+
+        return clothes;
     }
 
     public List<Pair<Clothes, Integer>> colorSchemeGenerate(JsonNode node) {
@@ -44,7 +70,7 @@ public class OutfitGenerator {
         OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
 
         // Get colors of the scheme
-        java.util.List<Color> colors = new ArrayList<>();
+        List<Color> colors = new ArrayList<>();
         for (JsonNode color : colorsNode) {
             int r = color.get("rgb").get("r").asInt();
             int g = color.get("rgb").get("g").asInt();
@@ -58,7 +84,7 @@ public class OutfitGenerator {
 
         // Gets list of clothes type to filter down multiple top layers to one type per layer
         int currentLayer = 1;
-        java.util.List<Pair<Type, Integer>> types = new ArrayList<>();
+        List<Pair<Type, Integer>> types = new ArrayList<>();
         while (currentLayer < outfitType.getLayers())
             for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
                 Type t = (Type) entry.getKey();
@@ -70,7 +96,7 @@ public class OutfitGenerator {
             }
 
         // Selects a random bottom type
-        java.util.List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
+        List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
         Collections.shuffle(bottoms);
         types.add(Pair.of(bottoms.get(0), 1));
 

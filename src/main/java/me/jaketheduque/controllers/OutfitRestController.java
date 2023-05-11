@@ -130,7 +130,7 @@ public class OutfitRestController {
             log.info("Selection method: " + selectionMethod);
             switch (selectionMethod) {
                 case "random":
-
+                    clothes = outfitGenerator.randomGenerate();
                     break;
                 case "color-scheme":
                     clothes = outfitGenerator.colorSchemeGenerate(node);
