@@ -6,7 +6,7 @@ import me.jaketheduque.sql.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +29,12 @@ public class WebController {
     @Autowired
     private OutfitTypeRepository outfitTypeRepository;
 
-    @RequestMapping("/add")
+    @GetMapping("/")
+    public String home() {
+        return "home";
+    }
+
+    @GetMapping("/add")
     public String add(Model model) {
         model.addAttribute("brands", brandRepository.getAllBrands());
         model.addAttribute("types",typeRepository.getAllTypes());
@@ -37,7 +42,7 @@ public class WebController {
         return "add";
     }
 
-    @RequestMapping("/view")
+    @GetMapping("/view")
     public String view(Model model) {
         // Convert to java.util.Date for Thymeleaf
         List<Clothes> clothes = new ArrayList<>();
@@ -50,13 +55,13 @@ public class WebController {
         return "view";
     }
 
-    @RequestMapping("/outfit")
+    @GetMapping("/outfit")
     public String outfit(Model model) {
         model.addAttribute("outfit_types", outfitTypeRepository.getAllOutfitTypes());
         return "outfit";
     }
 
-    @RequestMapping("/addtype")
+    @GetMapping("/addtype")
     public String addType(Model model) {
         model.addAttribute("bottoms", typeRepository.getAllTypes().stream().filter(Type::isBottom).toArray());
         model.addAttribute("tops", typeRepository.getAllTypes().stream().filter(t -> t.isBottom() == false).toArray());
