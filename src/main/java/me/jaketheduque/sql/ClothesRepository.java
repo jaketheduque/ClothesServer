@@ -189,7 +189,7 @@ public class ClothesRepository {
             // Adds each item in the multimap to the final list
             for (Clothes item : differenceItems) {
                 clothes.add(item);
-            } test
+            }
         }
 
         return clothes;
