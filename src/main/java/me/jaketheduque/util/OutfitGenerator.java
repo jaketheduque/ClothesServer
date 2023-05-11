@@ -34,7 +34,7 @@ public class OutfitGenerator {
     public List<Pair<Clothes, Integer>> randomGenerate(JsonNode node) {
         OutfitType outfitType = outfitTypeRepository.getRandomOutfitType();
 
-        // Quick testing android IDE
+        // Quick testing android IDE pt. 2
         // TODO Finish this method up
         return null;
     }
