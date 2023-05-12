@@ -134,6 +134,16 @@ public class OutfitRestController {
                     outfitType = outfitTypeRepository.getRandomOutfitType();
                     clothes = outfitGenerator.randomGenerate(outfitType);
                     break;
+                case "item-generate":
+                    // Gets the clothing item from the uuid
+                    String uuid = node.get("clothes_uuid").asText();
+                    Clothes item = clothesRepository.getClothesFromID(uuid);
+
+                    // Gets outfit type that has the item type
+                    outfitType = outfitTypeRepository.getRandomOutfitTypeWithType(item.getType());
+
+                    clothes = outfitGenerator.itemGenerate(outfitType, item);
+                    break;
                 case "color-scheme":
                     outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
                     clothes = outfitGenerator.colorSchemeGenerate(outfitType, node);

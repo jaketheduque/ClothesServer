@@ -15,14 +15,13 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component("outfitGenerator")
 public class OutfitGenerator {
+    // TODO Replace List<Pair<Clothes, Integer>> with custom object a la List<LayeredClothes>
+
     private static final Logger log = LoggerFactory.getLogger(OutfitGenerator.class);
 
     @Autowired
@@ -32,26 +31,13 @@ public class OutfitGenerator {
     private OutfitTypeRepository outfitTypeRepository;
 
     /**
-     * Complete random generation
+     * Fully random generation for an outfit type
+     *
+     * @param outfitType
+     * @return Clothes to layer pairs
      */
     public List<Pair<Clothes, Integer>> randomGenerate(OutfitType outfitType) {
-        // Gets list of clothes type to filter down multiple top layers to one type per layer
-        int currentLayer = 1;
-        List<Pair<Type, Integer>> types = new ArrayList<>();
-        while (currentLayer < outfitType.getLayers())
-            for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
-                Type t = (Type) entry.getKey();
-                // Looks for a type with a layer which matches the current layer being searched for
-                if (((Integer) entry.getValue()) == currentLayer) {
-                    types.add(Pair.of(t, currentLayer));
-                    currentLayer++;
-                }
-            }
-
-        // Selects a random bottom type
-        List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
-        Collections.shuffle(bottoms);
-        types.add(Pair.of(bottoms.get(0), 1));
+        var types = outfitType.getRandomTypeToLayers();
 
         // Gets clothes list from list of types and list of colors
         List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
@@ -63,6 +49,43 @@ public class OutfitGenerator {
         return clothes;
     }
 
+    /**
+     * Fully random generation for an outfit type also including the given item (outfit type given must have the item type)
+     *
+     * @param outfitType
+     * @param item
+     * @return Clothes to layer pairs
+     */
+    public List<Pair<Clothes, Integer>> itemGenerate(OutfitType outfitType, Clothes item) {
+        // Get layer where given clothing item would go
+        int itemLayer = outfitType.getTypeLayerMap().get(item.getType());
+
+        // Call completely random generate with outfit type
+        var clothes = randomGenerate(outfitType);
+
+        // Remove generated clothes item map with given clothing item at given layer (also checking if the given item is a bottom item)
+        for (int i = 0 ; i < clothes.size() ; i++) {
+            Pair<Clothes, Integer> pair = clothes.get(i);
+            if (pair.getFirst().getType().isBottom() == item.getType().isBottom()) {
+                if (pair.getSecond() == itemLayer) {
+                    clothes.remove(pair);
+                }
+            }
+        }
+
+        // Adds given item back
+        clothes.add(Pair.of(item, itemLayer));
+
+        return clothes;
+    }
+
+    /**
+     * Generate outfit from outfit type and color scheme (provided in JsonNode)
+     *
+     * @param outfitType
+     * @param node
+     * @return Clothes to layer pairs
+     */
     public List<Pair<Clothes, Integer>> colorSchemeGenerate(OutfitType outfitType, JsonNode node) {
         ArrayNode colorsNode = ((ArrayNode) node.get("colors"));
 
@@ -79,23 +102,7 @@ public class OutfitGenerator {
         // Shuffles colors list
         Collections.shuffle(colors);
 
-        // Gets list of clothes type to filter down multiple top layers to one type per layer
-        int currentLayer = 1;
-        List<Pair<Type, Integer>> types = new ArrayList<>();
-        while (currentLayer < outfitType.getLayers())
-            for (Map.Entry entry : outfitType.getTypeLayerMap().entrySet()) {
-                Type t = (Type) entry.getKey();
-                // Looks for a type with a layer which matches the current layer being searched for
-                if (((Integer) entry.getValue()) == currentLayer) {
-                    types.add(Pair.of(t, currentLayer));
-                    currentLayer++;
-                }
-            }
-
-        // Selects a random bottom type
-        List<Type> bottoms = Arrays.stream(outfitType.getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
-        Collections.shuffle(bottoms);
-        types.add(Pair.of(bottoms.get(0), 1));
+        var types = outfitType.getRandomTypeToLayers();
 
         // Gets clothes list from list of types and list of colors
         List<Pair<Clothes, Integer>> clothes = new ArrayList<>();

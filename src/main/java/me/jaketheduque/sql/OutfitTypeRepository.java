@@ -136,12 +136,13 @@ public class OutfitTypeRepository {
     
     public OutfitType getRandomOutfitTypeWithType(Type type) {
       // Find a random outfit type with clothes type
-      String sql = "SELECT BIN_TO_UUID(outfit_type_uuid) FROM v_type_layers_replacement WHERE type_uuid=UUID_TO_BIN(?) ORDER BY RAND()";
+      String sql = "SELECT outfit_type_uuid AS uuid FROM v_type_layers_replacement WHERE type_uuid=? ORDER BY RAND()";
 
         // Open a connection
         try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USERNAME, JDBC_PASSWORD)) {
           String uuid = null;
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, type.getUUID().toString());
                 try (ResultSet result = stmt.executeQuery()) {
                   // Get outfit type uuid
                   result.next();
@@ -168,7 +169,7 @@ public class OutfitTypeRepository {
                         Type t = typeRepository.getTypeByUUID(typeUUID);
 
                         if (result.getBoolean("bottom")) { // If bottom add to list
-                            bottoms.add(type);
+                            bottoms.add(t);
                         } else {
                             typeLayerMap.put(t, result.getInt("layer"));
                         }

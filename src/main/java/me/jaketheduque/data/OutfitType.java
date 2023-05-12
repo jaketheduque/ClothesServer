@@ -2,8 +2,10 @@ package me.jaketheduque.data;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.Immutable;
+import org.springframework.data.util.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Immutable
@@ -78,6 +80,36 @@ public class OutfitType {
     public void setLayers(int layers) {
         this.layers = layers;
     }
+
+    /**
+     * Filters down multiple top layers to one type per layer and chooses one bottom type
+     * (Acts as a helper method for outfit generation)
+     *
+     * @return Type to layer pairs
+     */
+    public List<Pair<Type, Integer>> getRandomTypeToLayers() {
+        // Gets list of clothes type to filter down multiple top layers to one type per layer
+        int currentLayer = 1;
+        List<Pair<Type, Integer>> types = new ArrayList<>();
+        while (currentLayer < getLayers()) {
+            for (Map.Entry entry : getTypeLayerMap().entrySet()) {
+                Type t = (Type) entry.getKey();
+                // Looks for a type with a layer which matches the current layer being searched for
+                if (((Integer) entry.getValue()) == currentLayer) {
+                    types.add(Pair.of(t, currentLayer));
+                    currentLayer++;
+                }
+            }
+        }
+
+        // Selects a random bottom type
+        List<Type> bottoms = Arrays.stream(getBottoms()).collect(Collectors.toList()); // Needed so that the list can be modified
+        Collections.shuffle(bottoms);
+        types.add(Pair.of(bottoms.get(0), 1));
+
+        return types;
+    }
+
 
     @Override
     public String toString() {
