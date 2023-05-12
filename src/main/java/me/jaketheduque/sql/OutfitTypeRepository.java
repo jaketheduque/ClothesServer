@@ -165,18 +165,20 @@ public class OutfitTypeRepository {
                         outfitTypeName = result.getString("outfit_name");
 
                         UUID typeUUID = UUID.fromString(result.getString("type_uuid"));
-                        Type type = typeRepository.getTypeByUUID(typeUUID);
+                        Type t = typeRepository.getTypeByUUID(typeUUID);
 
                         if (result.getBoolean("bottom")) { // If bottom add to list
                             bottoms.add(type);
                         } else {
-                            typeLayerMap.put(type, result.getInt("layer"));
+                            typeLayerMap.put(t, result.getInt("layer"));
                         }
                     }
 
                     return new OutfitType(outfitTypeUUID, outfitTypeName, typeLayerMap, bottoms.toArray(new Type[0]));
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
       
         return null;

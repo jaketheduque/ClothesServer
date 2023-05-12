@@ -32,11 +32,9 @@ public class OutfitGenerator {
     private OutfitTypeRepository outfitTypeRepository;
 
     /**
-     * Complete random generation (random outfit type etc.)
+     * Complete random generation
      */
-    public List<Pair<Clothes, Integer>> randomGenerate() {
-        OutfitType outfitType = outfitTypeRepository.getRandomOutfitType();
-
+    public List<Pair<Clothes, Integer>> randomGenerate(OutfitType outfitType) {
         // Gets list of clothes type to filter down multiple top layers to one type per layer
         int currentLayer = 1;
         List<Pair<Type, Integer>> types = new ArrayList<>();
@@ -65,9 +63,8 @@ public class OutfitGenerator {
         return clothes;
     }
 
-    public List<Pair<Clothes, Integer>> colorSchemeGenerate(JsonNode node) {
+    public List<Pair<Clothes, Integer>> colorSchemeGenerate(OutfitType outfitType, JsonNode node) {
         ArrayNode colorsNode = ((ArrayNode) node.get("colors"));
-        OutfitType outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
 
         // Get colors of the scheme
         List<Color> colors = new ArrayList<>();

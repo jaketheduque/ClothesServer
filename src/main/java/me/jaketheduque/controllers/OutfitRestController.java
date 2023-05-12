@@ -125,21 +125,26 @@ public class OutfitRestController {
             JsonNode node = objectMapper.readTree(payload);
             String selectionMethod = node.get("type").asText();
 
-
             List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
-            log.info("Selection method: " + selectionMethod);
+            OutfitType outfitType = null;
+
+            log.info("Selection method: {}", selectionMethod);
             switch (selectionMethod) {
                 case "random":
-                    clothes = outfitGenerator.randomGenerate();
+                    outfitType = outfitTypeRepository.getRandomOutfitType();
+                    clothes = outfitGenerator.randomGenerate(outfitType);
                     break;
                 case "color-scheme":
-                    clothes = outfitGenerator.colorSchemeGenerate(node);
+                    outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
+                    clothes = outfitGenerator.colorSchemeGenerate(outfitType, node);
                     break;
             }
 
+            log.info("Outfit Type: {}", outfitType.getName());
 
-            // Creates base dictionary node for clothes
-            ArrayNode clothesNode = objectMapper.createArrayNode();
+            // Creates base nodes
+            ObjectNode returnNode = objectMapper.createObjectNode();
+            ArrayNode clothesNode = returnNode.putArray("clothes");
 
             // Adds each clothing item found to clothesNode as a dictionary value with layer as the key
             for (var c : clothes) {
@@ -149,10 +154,12 @@ public class OutfitRestController {
                 clothesNode.add(itemNode);
             }
 
+            // Adds the generated clothes type to return JSON
+            returnNode.set("outfit_type", objectMapper.valueToTree(outfitType.getName()));
 
             log.info("Item names: {}", clothes.stream().map(c -> c.getFirst().getName()).collect(Collectors.joining(", ")));
 
-            return new ResponseEntity<> (clothesNode.toString(), HttpStatus.OK);
+            return new ResponseEntity<> (returnNode.toString(), HttpStatus.OK);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
