@@ -48,6 +48,7 @@
                     <select ng-model="selectionMethod" ng-change="updateSelectionMethod()" class="form-select">
                         <option value="random">Random</option>
                         <option value="item-generate">Item Generate</option>
+                        <option value="outfit-type-generate">Outfit Type Generate</option>
                         <option value="color-scheme">Color Scheme</option>
                     </select>
                 </div>
@@ -65,6 +66,19 @@
                         <input id="clothes-item-uuid" class="mb-3" type="text" placeholder="Clothing item UUID">
                         <button type="button" class="btn btn-dark" ng-click="itemOutfitGenerate()">
                             <h1>Generate outfit from item</h1>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="outfit-type-generate" class="selection-div justify-content-center row" hidden>
+                    <div class="row container w-100 mx-auto mb-3">
+                        <select name="outfit_type" id="type-generate-selector" class="mb-3">
+                            <option th:each="outfit_type : ${outfit_types}" th:text="${outfit_type.name}"
+                                th:value="${outfit_type.getUUID()}" th:attr="layers=|${outfit_type.layers}|">
+                            </option>
+                        </select>
+                        <button type="button" class="btn btn-dark" ng-click="outfitTypeGenerate()">
+                            <h1>Generate from outfit type</h1>
                         </button>
                     </div>
                 </div>
@@ -303,14 +317,12 @@
         }
 
         /*
-         * Fully random outfit generate
+         * Generate from a given item
          */
         $scope.itemOutfitGenerate = function () {
-            const div = document.getElementById("outfit_type_selector");
-            const uuid = div.options[div.selectedIndex].value;
-            const clothesUUID = document.getElementById("clothes-item-uuid").value;
+            const uuid = document.getElementById("clothes-item-uuid").value;
 
-            if (clothesUUID == null || clothesUUID == '') {
+            if (uuid == null || uuid == '') {
                 $window.alert("Please input a clothes UUID!");
                 return;
             }
@@ -320,9 +332,42 @@
 
             // Create request body
             const body = {
-                outfit_type_uuid: uuid,
-                clothes_uuid: clothesUUID,
+                clothes_uuid: uuid,
                 type: "item-generate"
+            }
+            const json = JSON.stringify(body);
+
+            $http.post('/api/getoutfit', json).then(function (clothesResult) {
+                // Set AngularJS variables to return JSON
+                $scope.clothes = clothesResult.data.clothes;
+                $scope.outfitTypeName = clothesResult.data.outfit_type;
+
+                $scope.showLoading = false;
+            }, function () {
+                $window.alert("Error happened when getting outfit!")
+                $scope.showLoading = false;
+            })
+        }
+
+        /*
+         * Generate from an outfit type
+         */
+        $scope.outfitTypeGenerate = function () {
+            const div = document.getElementById("type-generate-selector");
+            const uuid = div.options[div.selectedIndex].value;
+
+            if (uuid == null || uuid == '') {
+                $window.alert("Please choose an outfit type!");
+                return;
+            }
+
+            // Show loading overlay
+            $scope.showLoading = true;
+
+            // Create request body
+            const body = {
+                outfit_type_uuid: uuid,
+                type: "outfit-type-generate"
             }
             const json = JSON.stringify(body);
 

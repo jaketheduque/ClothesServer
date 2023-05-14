@@ -127,6 +127,7 @@ public class OutfitRestController {
 
             List<Pair<Clothes, Integer>> clothes = new ArrayList<>();
             OutfitType outfitType = null;
+            String uuid = null;
 
             log.info("Selection method: {}", selectionMethod);
             switch (selectionMethod) {
@@ -136,13 +137,20 @@ public class OutfitRestController {
                     break;
                 case "item-generate":
                     // Gets the clothing item from the uuid
-                    String uuid = node.get("clothes_uuid").asText();
+                    uuid = node.get("clothes_uuid").asText();
                     Clothes item = clothesRepository.getClothesFromID(uuid);
 
                     // Gets outfit type that has the item type
                     outfitType = outfitTypeRepository.getRandomOutfitTypeWithType(item.getType());
 
                     clothes = outfitGenerator.itemGenerate(outfitType, item);
+                    break;
+                case "outfit-type-generate":
+                    // Gets the outfit type from the uuid
+                    uuid = node.get("outfit_type_uuid").asText();
+                    outfitType = outfitTypeRepository.getOutfitTypeByUUID(uuid);
+
+                    clothes = outfitGenerator.randomGenerate(outfitType);
                     break;
                 case "color-scheme":
                     outfitType = outfitTypeRepository.getOutfitTypeByUUID(node.get("outfit_type_uuid").asText());
