@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class ClothesRestController {
     private static final Logger log = LoggerFactory.getLogger(ClothesRestController.class);
+    private static Clothes tagWriteItem;
 
     @Autowired
     private ClothesRepository clothesRepository;
@@ -39,23 +41,35 @@ public class ClothesRestController {
     }
 
     @GetMapping("/api/getclothes")
-    public List<Clothes> getClothes(@RequestParam(value = "uuid", required = false) String uuid) {
+    public ResponseEntity<List<Clothes>> get(@RequestParam(value = "uuid", required = false) String uuid) {
         // If no id is provided then return all clothes
         if (uuid == null) {
             List<Clothes> clothes = clothesRepository.getAllClothes();
 
             log.info("All clothes requested");
 
-            return clothes;
+            return new ResponseEntity<>(clothes, HttpStatus.OK);
         } else {
             Clothes item = clothesRepository.getClothesFromID(uuid);
 
             log.info("Clothing item requested: " + item);
 
+            // Sets the tag write item to the retrieved item
+            tagWriteItem = item;
+
             List<Clothes> clothes = new ArrayList<>();
             clothes.add(item);
 
-            return clothes;
+            return new ResponseEntity<>(clothes, HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/api/getwriteitem")
+    public ResponseEntity<Clothes> getWriteUUID() {
+        if (tagWriteItem == null) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(tagWriteItem, HttpStatus.OK);
     }
 }
