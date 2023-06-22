@@ -13,29 +13,73 @@
             border-style: solid;
             border-color: black;
         }
-
+        
         .type_icon {
             height: 40px;
             width: 40px;
         }
     </style>
+
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
 </head>
 
 <body class="d-flex flex-column" ng-app="viewPage">
     <div class="d-flex bg-dark text-white">
         <h1 class="mx-auto text-center m-3">All Clothes</h1>
         <div class="d-flex justify-content-end position-absolute w-100 align-self-center pe-5">
-            <svg xmlns="http://www.w3.org/2000/svg" title="Daily Outfit" onclick="showOutfitCart()"
-                style="cursor:pointer" width="50" height="50" fill="currentColor" class="bi bi-bag" viewbox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" title="Daily Outfit" onclick="showOutfitCart()" style="cursor:pointer" width="50" height="50" fill="currentColor" class="bi bi-bag" viewbox="0 0 16 16">
                 <path
                     d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z" />
             </svg>
         </div>
     </div>
 
+    <noscript>
+        <h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+            enabled. Please enable
+            Javascript and reload this page!</h2>
+    </noscript>
+    <div id="main-content" class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="connect">WebSocket connection:</label>
+                        <button id="connect" class="btn btn-default" type="submit">Connect</button>
+                        <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="name">What is your name?</label>
+                        <input type="text" id="name" class="form-control" placeholder="Your name here...">
+                    </div>
+                    <button id="send" class="btn btn-default" type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="conversation" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Greetings</th>
+                        </tr>
+                    </thead>
+                    <tbody id="greetings">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div ng-controller="dailyOutfitController">
-        <div id="outfit-list-overlay"
-            class="visually-hidden w-100 h-100 position-absolute d-flex flex-row justify-content-end">
+        <div id="outfit-list-overlay" class="visually-hidden w-100 h-100 position-absolute d-flex flex-row justify-content-end">
             <div class="flex-fill bg-black opacity-50"></div>
             <div class="px-4 py-2 border border-2 bg-white">
 
@@ -86,48 +130,37 @@
                         <td th:attr="onclick=|copyToClipboard('${clothes.getUUID()}')|" th:title="${clothes.getUUID()}">
                             Click to copy UUID
                         </td>
-                        <th class="clothes-title outfit-row" th:text="${clothes.name}"
-                            th:attr="sort-value=|${clothes.name}|"></th>
+                        <th class="clothes-title outfit-row" th:text="${clothes.name}" th:attr="sort-value=|${clothes.name}|"></th>
                         <td class="outfit-row" th:attr="sort-value=|${clothes.type.name}|">
-                            <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false"
-                                th:attr="src=|icons/${#strings.replace(#strings.toLowerCase(clothes.type.name), ' ', '_')}.svg|, data-bs-target=|#type_collapsible${iter.index}|, aria-controls=|type_collapsible${iter.index}|" />
+                            <img class="type_icon" data-bs-toggle="collapse" aria-expanded="false" th:attr="src=|icons/${#strings.replace(#strings.toLowerCase(clothes.type.name), ' ', '_')}.svg|, data-bs-target=|#type_collapsible${iter.index}|, aria-controls=|type_collapsible${iter.index}|"
+                            />
                             <div class="collapse w-75 m-2" th:attr="id=|type_collapsible${iter.index}|">
                                 <div class="card card-body form-check form-switch">
                                     <h6 th:text="${clothes.type.name}"></h6>
                                     <div>
                                         <label class="form-check-label" th:for="|bottom${iter.index}|">Bottom?</label>
-                                        <input class="form-check-input m-1" th:id="|bottom${iter.index}|"
-                                            type="checkbox" disabled="disabled" th:checked="${clothes.type.bottom}">
+                                        <input class="form-check-input m-1" th:id="|bottom${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.bottom}">
                                     </div>
                                     <div>
                                         <label class="form-check-label" th:for="|hooded${iter.index}|">Hooded?</label>
-                                        <input class="form-check-input m-1" th:id="|hooded${iter.index}|"
-                                            type="checkbox" disabled="disabled" th:checked="${clothes.type.hooded}">
+                                        <input class="form-check-input m-1" th:id="|hooded${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.hooded}">
                                     </div>
                                     <div>
                                         <label class="form-check-label" th:for="|long_sleeve${iter.index}|">Long
                                             Sleeve?</label>
-                                        <input class="form-check-input m-1" th:id="|long_sleeve${iter.index}|"
-                                            type="checkbox" disabled="disabled"
-                                            th:checked="${clothes.type.isLongSleeve()}">
+                                        <input class="form-check-input m-1" th:id="|long_sleeve${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.isLongSleeve()}">
                                     </div>
                                     <div>
-                                        <label class="form-check-label"
-                                            th:for="|buttoned${iter.index}|">Buttoned?</label>
-                                        <input class="form-check-input m-1" th:id="|buttoned${iter.index}|"
-                                            type="checkbox" disabled="disabled" th:checked="${clothes.type.buttoned}">
+                                        <label class="form-check-label" th:for="|buttoned${iter.index}|">Buttoned?</label>
+                                        <input class="form-check-input m-1" th:id="|buttoned${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.buttoned}">
                                     </div>
                                     <div>
-                                        <label class="form-check-label"
-                                            th:for="|zippered${iter.index}|">Zippered?</label>
-                                        <input class="form-check-input m-1" th:id="|zippered${iter.index}|"
-                                            type="checkbox" disabled="disabled" th:checked="${clothes.type.zippered}">
+                                        <label class="form-check-label" th:for="|zippered${iter.index}|">Zippered?</label>
+                                        <input class="form-check-input m-1" th:id="|zippered${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.zippered}">
                                     </div>
                                     <div>
-                                        <label class="form-check-label"
-                                            th:for="|collared${iter.index}|">Collared?</label>
-                                        <input class="form-check-input m-1" th:id="|collared${iter.index}|"
-                                            type="checkbox" disabled="disabled" th:checked="${clothes.type.collared}">
+                                        <label class="form-check-label" th:for="|collared${iter.index}|">Collared?</label>
+                                        <input class="form-check-input m-1" th:id="|collared${iter.index}|" type="checkbox" disabled="disabled" th:checked="${clothes.type.collared}">
                                     </div>
                                 </div>
                             </div>
@@ -146,14 +179,10 @@
                         </td>
                         <td th:text=" ${clothes.pattern.name} " th:attr="sort-value=|${clothes.pattern.name}|"></td>
                         <td th:if="${clothes.brand==null}" sort-value="None">None</td>
-                        <td th:text="${clothes.brand.name}" th:unless="${clothes.brand==null}"
-                            th:attr="sort-value=|${clothes.brand.name}|"></td>
+                        <td th:text="${clothes.brand.name}" th:unless="${clothes.brand==null}" th:attr="sort-value=|${clothes.brand.name}|"></td>
                         <td th:if="${clothes.getLastDateWorn()==null}" sort-value="0"></td>
-                        <td th:unless="${clothes.getLastDateWorn()==null}"
-                            th:text="${#dates.format(clothes.getLastDateWorn(), 'M/dd/yyyy')}"
-                            th:attr="sort-value=|${clothes.getLastDateWorn().getTime()}|"></td>
-                        <td><button class="btn btn-success add-to-outfit-button"
-                                th:attr="onclick=|addToOutfit('${clothes.getUUID()}')|">Add to Outfit</button></td>
+                        <td th:unless="${clothes.getLastDateWorn()==null}" th:text="${#dates.format(clothes.getLastDateWorn(), 'M/dd/yyyy')}" th:attr="sort-value=|${clothes.getLastDateWorn().getTime()}|"></td>
+                        <td><button class="btn btn-success add-to-outfit-button" th:attr="onclick=|addToOutfit('${clothes.getUUID()}')|">Add to Outfit</button></td>
                     </tr>
                 </tbody>
             </table>
@@ -263,10 +292,71 @@
 </script>
 
 <script>
+    var stompClient = null;
+
+    function setConnected(connected) {
+        $("#connect").prop("disabled", connected);
+        $("#disconnect").prop("disabled", !connected);
+        if (connected) {
+            $("#conversation").show();
+        } else {
+            $("#conversation").hide();
+        }
+        $("#greetings").html("");
+    }
+
+    function connect() {
+        var socket = new SockJS('/gs-guide-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            setConnected(true);
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/api/socket/listentoitems', function(item) {
+                showGreeting(JSON.parse(item.body));
+            });
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+
+    function sendName() {
+        stompClient.send("/api/socket/registeritem", {}, JSON.stringify({
+            'first': '07a5473d-ee10-11ed-a3c9-0242ac190002',
+            'second': '1'
+        }));
+    }
+
+    function showGreeting(pair) {
+        $("#greetings").append("<tr><td>" + pair.item.name + "</td></tr>");
+    }
+
+    $(function() {
+        $("form").on('submit', function(e) {
+            e.preventDefault();
+        });
+        $("#connect").click(function() {
+            connect();
+        });
+        $("#disconnect").click(function() {
+            disconnect();
+        });
+        $("#send").click(function() {
+            sendName();
+        });
+    });
+</script>
+
+<script>
     var app = angular.module("viewPage", []);
 
-    app.controller("dailyOutfitController", function ($scope, $http, $window) {
-        $scope.init = function () {
+    app.controller("dailyOutfitController", function($scope, $http, $window) {
+        $scope.init = function() {
             $scope.date = new Date();
 
             var params = new URLSearchParams(window.location.search);
@@ -282,7 +372,7 @@
             }
         }
 
-        $scope.onSubmitClick = function () {
+        $scope.onSubmitClick = function() {
             const utc = $scope.date;
             const pst = new Date(utc.getTime() - (utc.getTimezoneOffset() * 60000));;
             const date = pst.toISOString().split("T")[0];
@@ -302,9 +392,9 @@
 
             const json = JSON.stringify(body);
 
-            $http.post('/api/adddailyoutfit', json).then(function () {
+            $http.post('/api/adddailyoutfit', json).then(function() {
                 $window.alert("Successfully logged outfit!");
-            }, function () {
+            }, function() {
                 $window.alert("Error happened when logging outfit!");
             })
 
@@ -312,8 +402,8 @@
         }
     })
 
-    app.controller("searchController", function ($scope, $window) {
-        $scope.updateTable = function () {
+    app.controller("searchController", function($scope, $window) {
+        $scope.updateTable = function() {
             var value = $scope.searchValue;
             var body = document.getElementById('clothes-table').lastElementChild;
 
