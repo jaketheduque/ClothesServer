@@ -34,6 +34,11 @@ public class WebController {
         return "home";
     }
 
+    @GetMapping("/socket")
+    public String socket() {
+        return "socket";
+    }
+
     @GetMapping("/add")
     public String add(Model model) {
         model.addAttribute("brands", brandRepository.getAllBrands());

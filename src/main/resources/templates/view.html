@@ -3,6 +3,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js" integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <head>
     <title>All Clothes Page</title>
@@ -33,48 +35,6 @@
                 <path
                     d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z" />
             </svg>
-        </div>
-    </div>
-
-    <noscript>
-        <h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
-            enabled. Please enable
-            Javascript and reload this page!</h2>
-    </noscript>
-    <div id="main-content" class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <form class="form-inline">
-                    <div class="form-group">
-                        <label for="connect">WebSocket connection:</label>
-                        <button id="connect" class="btn btn-default" type="submit">Connect</button>
-                        <button id="disconnect" class="btn btn-default" type="submit" disabled="disabled">Disconnect
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-6">
-                <form class="form-inline">
-                    <div class="form-group">
-                        <label for="name">What is your name?</label>
-                        <input type="text" id="name" class="form-control" placeholder="Your name here...">
-                    </div>
-                    <button id="send" class="btn btn-default" type="submit">Send</button>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <table id="conversation" class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Greetings</th>
-                        </tr>
-                    </thead>
-                    <tbody id="greetings">
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
@@ -182,10 +142,17 @@
                         <td th:text="${clothes.brand.name}" th:unless="${clothes.brand==null}" th:attr="sort-value=|${clothes.brand.name}|"></td>
                         <td th:if="${clothes.getLastDateWorn()==null}" sort-value="0"></td>
                         <td th:unless="${clothes.getLastDateWorn()==null}" th:text="${#dates.format(clothes.getLastDateWorn(), 'M/dd/yyyy')}" th:attr="sort-value=|${clothes.getLastDateWorn().getTime()}|"></td>
-                        <td><button class="btn btn-success add-to-outfit-button" th:attr="onclick=|addToOutfit('${clothes.getUUID()}')|">Add to Outfit</button></td>
+                        <td><button class="btn btn-success add-to-outfit-button" th:attr="onclick=|addToOutfit('${clothes.getUUID()}', -1)|">Add to Outfit</button></td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div class="mt-2 d-flex bg-dark p-3" ng-controller="tagUUIDController">
+            <div class="mx-auto">
+                <input type="text" ng-model="tagUUID" placeholder="Tag UUID">
+                <button class="btn btn-primary mx-auto" ng-click="setWriteUUID()">Set write UUID!</button>
+            </div>
         </div>
     </div>
 </body>
@@ -252,9 +219,9 @@
         }
     }
 
-    function addToOutfit(id) {
+    function addToOutfit(uuid, layer) {
         var overlay = document.getElementById("outfit-list-overlay");
-        var row = document.getElementById(id);
+        var row = document.getElementById(uuid);
         var button = row.getElementsByClassName("add-to-outfit-button").item(0);
         var body = overlay.getElementsByTagName("tbody").item(0);
 
@@ -265,9 +232,16 @@
 
             var newRow = body.insertRow();
 
-            newRow.setAttribute("clothes-uuid", id);
+            newRow.setAttribute("clothes-uuid", uuid);
             newRow.classList.add("daily_clothing_item")
-            newRow.insertCell().innerHTML = "<input type='number' min=1>"
+
+            if (layer < 0) {
+                newRow.insertCell().innerHTML = "<input type='number' min=1>"
+            } else {
+                newRow.insertCell().innerHTML = "<input type='number' min=1 value=" + layer + ">"
+            }
+
+
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(0).outerHTML;
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(1).outerHTML;
             // If item is being removed from the outfit list
@@ -275,7 +249,7 @@
             button.setAttribute("class", "btn btn-success add-to-outfit-button");
             button.textContent = "Add to Outfit";
 
-            var removeRow = body.querySelector("[clothes-uuid='" + id + "']");
+            var removeRow = body.querySelector("[clothes-uuid='" + uuid + "']");
             body.removeChild(removeRow);
         }
     }
@@ -292,71 +266,12 @@
 </script>
 
 <script>
-    var stompClient = null;
-
-    function setConnected(connected) {
-        $("#connect").prop("disabled", connected);
-        $("#disconnect").prop("disabled", !connected);
-        if (connected) {
-            $("#conversation").show();
-        } else {
-            $("#conversation").hide();
-        }
-        $("#greetings").html("");
-    }
-
-    function connect() {
-        var socket = new SockJS('/gs-guide-websocket');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function(frame) {
-            setConnected(true);
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/api/socket/listentoitems', function(item) {
-                showGreeting(JSON.parse(item.body));
-            });
-        });
-    }
-
-    function disconnect() {
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
-        setConnected(false);
-        console.log("Disconnected");
-    }
-
-    function sendName() {
-        stompClient.send("/api/socket/registeritem", {}, JSON.stringify({
-            'first': '07a5473d-ee10-11ed-a3c9-0242ac190002',
-            'second': '1'
-        }));
-    }
-
-    function showGreeting(pair) {
-        $("#greetings").append("<tr><td>" + pair.item.name + "</td></tr>");
-    }
-
-    $(function() {
-        $("form").on('submit', function(e) {
-            e.preventDefault();
-        });
-        $("#connect").click(function() {
-            connect();
-        });
-        $("#disconnect").click(function() {
-            disconnect();
-        });
-        $("#send").click(function() {
-            sendName();
-        });
-    });
-</script>
-
-<script>
     var app = angular.module("viewPage", []);
 
     app.controller("dailyOutfitController", function($scope, $http, $window) {
         $scope.init = function() {
+            connect();
+
             $scope.date = new Date();
 
             var params = new URLSearchParams(window.location.search);
@@ -420,6 +335,25 @@
             }
         }
     })
+</script>
+
+<script>
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function(item) {
+                addItem(JSON.parse(item.body));
+            });
+        });
+    }
+
+    function addItem(body) {
+        addToOutfit(body.item.uuid, body.layer);
+    }
 </script>
 
 </html>
