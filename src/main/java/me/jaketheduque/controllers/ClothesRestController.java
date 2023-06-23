@@ -54,14 +54,23 @@ public class ClothesRestController {
 
             log.info("Clothing item requested: " + item);
 
-            // Sets the tag write item to the retrieved item
-            tagWriteItem = item;
-
             List<Clothes> clothes = new ArrayList<>();
             clothes.add(item);
 
             return new ResponseEntity<>(clothes, HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/api/setwriteitem")
+    public ResponseEntity<Clothes> setWriteUUID(@RequestParam(value = "uuid") String uuid) {
+        Clothes item = clothesRepository.getClothesFromID(uuid);
+
+        log.info("Set tag item: " + item);
+
+        // Sets the tag write item to the retrieved item
+        tagWriteItem = item;
+
+        return new ResponseEntity<>(item, HttpStatus.OK);
     }
 
     @GetMapping("/api/getwriteitem")
