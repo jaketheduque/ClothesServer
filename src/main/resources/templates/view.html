@@ -351,7 +351,7 @@
     var stompClient = null;
 
     function connect() {
-        var socket = new SockJS('https://clothes.xieservers.com/websocket');
+        var socket = new SockJS('/websocket');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function(frame) {
             console.log('Connected: ' + frame);
