@@ -335,6 +335,16 @@
             }
         }
     })
+
+    app.controller("tagUUIDController", function($scope, $window, $http) {
+        $scope.setWriteUUID = function() {
+            $http.get('/api/setwriteitem?uuid=' + $scope.tagUUID).then(function() {
+                $window.alert("Successfully set write UUID!");
+            }, function() {
+                $window.alert("Error happened when setting write UUID!");
+            })
+        }
+    })
 </script>
 
 <script>
