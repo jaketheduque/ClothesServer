@@ -369,7 +369,7 @@
     }
 
     function sendWriteUUID(message) {
-        stompClient.send("/websocket/commands/writeuuid", {}, message);
+        stompClient.send("/commands/writeuuid", {}, message);
     }
 
     function addItem(body) {
