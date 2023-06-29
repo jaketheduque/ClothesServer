@@ -56,6 +56,7 @@
                             <th scope="col">Layer</th>
                             <th scope="col">Name</th>
                             <th scope="col">Type</th>
+                            <th scope="col"></th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -165,7 +166,7 @@
                         <td th:unless="${clothes.getLastDateWorn()==null}"
                             th:text="${#dates.format(clothes.getLastDateWorn(), 'M/dd/yyyy')}"
                             th:attr="sort-value=|${clothes.getLastDateWorn().getTime()}|"></td>
-                        <td><button class="btn btn-success add-to-outfit-button"
+                        <td class="outfit-row"><button class="btn btn-success add-to-outfit-button"
                                 th:attr="onclick=|addToOutfit('${clothes.getUUID()}', -1)|">Add to Outfit</button></td>
                     </tr>
                 </tbody>
@@ -258,11 +259,11 @@
                 newRow.insertCell().innerHTML = "<input type='number' min=1 value=" + layer + ">"
             }
 
-
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(0).outerHTML;
             newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(1).outerHTML;
-            // If item is being removed from the outfit list
+            newRow.insertCell().innerHTML = row.getElementsByClassName("outfit-row").item(2).outerHTML;
         } else {
+            // If item is being removed from the outfit list
             button.setAttribute("class", "btn btn-success add-to-outfit-button");
             button.textContent = "Add to Outfit";
 
