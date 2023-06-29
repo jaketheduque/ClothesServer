@@ -12,12 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 public class ClothesRestController {
     private static final Logger log = LoggerFactory.getLogger(ClothesRestController.class);
-    private static Clothes tagWriteItem;
 
     @Autowired
     private ClothesRepository clothesRepository;
@@ -59,26 +57,5 @@ public class ClothesRestController {
 
             return new ResponseEntity<>(clothes, HttpStatus.OK);
         }
-    }
-
-    @GetMapping("/api/setwriteitem")
-    public ResponseEntity<Clothes> setWriteUUID(@RequestParam(value = "uuid") String uuid) {
-        Clothes item = clothesRepository.getClothesFromID(uuid);
-
-        log.info("Set tag item: " + item);
-
-        // Sets the tag write item to the retrieved item
-        tagWriteItem = item;
-
-        return new ResponseEntity<>(item, HttpStatus.OK);
-    }
-
-    @GetMapping("/api/getwriteitem")
-    public ResponseEntity<Clothes> getWriteUUID() {
-        if (tagWriteItem == null) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(tagWriteItem, HttpStatus.OK);
     }
 }
