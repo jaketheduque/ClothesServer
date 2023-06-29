@@ -97,7 +97,7 @@
                             <button type="button" class="btn btn-primary"
                                 th:attr="onclick=|copyToClipboard('${clothes.getUUID()}')|">Copy</button>
                             <button type="button" class="btn btn-danger"
-                                th:attr="onclick=|sendWriteUUID('${clothes.getUUID()}')|">Send</button>
+                                th:attr="onclick=|sendWriteInfo('${clothes.getName()}','${clothes.getUUID()}')|">Send</button>
                         </td>
                         <th class="clothes-title outfit-row" th:text="${clothes.name}"
                             th:attr="sort-value=|${clothes.name}|"></th>
@@ -368,8 +368,13 @@
         });
     }
 
-    function sendWriteUUID(message) {
-        stompClient.send("/commands/writeuuid", {}, message);
+    function sendWriteInfo(itemName, itemUUID) {
+        const item = {
+            name: itemName,
+            uuid: itemUUID
+        }
+
+        stompClient.send("/commands/writeuuid", {}, JSON.stringify(item));
     }
 
     function addItem(body) {
